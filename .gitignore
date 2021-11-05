@@ -4,6 +4,8 @@ tiles_Camelyon16_with_metadata_all/
 tiles_with_metadata_all/
 trash/
 
+internal/
+hackathon/
 local-worker/
 *.gz
 *.zip
