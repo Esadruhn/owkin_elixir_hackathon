@@ -48,6 +48,7 @@
 # * pull the `connect-tools
 # <https://github.com/owkin/connect-tools#pull-from-public-docker-registry>`
 # docker images
+# * install the requirements: pip install -r requirements.txt
 #
 # You can either:
 # * run this example in debug mode (no connection to a connect platform)
