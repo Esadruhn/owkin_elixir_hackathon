@@ -58,6 +58,7 @@
 # will use.
 #
 
+import os
 import json
 import uuid
 import zipfile
@@ -98,8 +99,14 @@ compute_plan_info_path = current_directory.parent / "compute_plan_info.json"
 
 
 DEBUG = True
-N_CENTERS = 3
 
+# Change to 'docker' to test with one Docker container per task
+# The 'docker' mode is much slower, but should be tested at
+# least once before submitting to a deployed Connect platform (DEBUG = False)
+# because it also tests that the Dockerfiles are correct
+os.environ['DEBUG_SPAWNER'] = 'subprocess'
+
+N_CENTERS = 3
 
 PROFILE_NAMES = ["node_A", "node_B", "node_C"]
 NODES_IDS = [
