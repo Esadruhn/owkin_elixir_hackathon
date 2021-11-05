@@ -9,10 +9,8 @@ from tensorflow.keras import layers
 
 N_UPDATE = 5
 BATCH_SIZE = 32
-N_NODES = 3
 N_ROUNDS = 3
 IMAGE_SIZE = (180, 180)
-
 
 
 def generate_batch_indexes(index, n_rounds, n_update, batch_size):
@@ -56,7 +54,6 @@ def generate_batch_indexes(index, n_rounds, n_update, batch_size):
 
 
 class Algo(tools.algo.Algo):
-
     def train(self, X, y, models, rank):
         """Train function of the algorithm.
         To train the algorithm on different batches on each step
@@ -76,7 +73,7 @@ class Algo(tools.algo.Algo):
         """
         compute_plan_path = Path(self.compute_plan_path)
 
-        batch_indexer_path = compute_plan_path / 'batches_loc_node.txt'
+        batch_indexer_path = compute_plan_path / "batches_loc_node.txt"
         if batch_indexer_path.is_file():
             print("reading batch indexer state")
             batches_loc = eval(batch_indexer_path.read_text())
@@ -90,7 +87,7 @@ class Algo(tools.algo.Algo):
             )
 
         if models:
-            assert len(models) == 1, f'Only one parent model expected {len(models)}'
+            assert len(models) == 1, f"Only one parent model expected {len(models)}"
             model = models[0]
         else:
             model = make_model(input_shape=IMAGE_SIZE + (3,), num_classes=2)
@@ -117,15 +114,19 @@ class Algo(tools.algo.Algo):
 
     def predict(self, X, model):
 
-        batch_X = np.empty(shape=(len(X),180,180,3))
-        
+        batch_X = np.empty(shape=(len(X), 180, 180, 3))
+
         for index, path in enumerate(X):
 
             image = tf.keras.preprocessing.image.load_img(
-            path, grayscale=False, color_mode="rgb", target_size=IMAGE_SIZE, interpolation="nearest"
-        )
+                path,
+                grayscale=False,
+                color_mode="rgb",
+                target_size=IMAGE_SIZE,
+                interpolation="nearest",
+            )
             input_arr = tf.keras.preprocessing.image.img_to_array(image)
-            batch_X[index,:,:,:] = input_arr
+            batch_X[index, :, :, :] = input_arr
 
         predictions = model.predict(batch_X)
 
@@ -134,13 +135,12 @@ class Algo(tools.algo.Algo):
     def load_model(self, path):
         return keras.models.load_model(path)
 
-
     def save_model(self, model, path):
         model.save(path, save_format="h5")
 
 
 def get_label_from_filepath(filepath):
-    
+
     if "normal" in filepath.stem:
         return 0
     elif "tumor" in filepath.stem:
@@ -148,32 +148,39 @@ def get_label_from_filepath(filepath):
     else:
         raise Exception()
 
+
 def get_X_and_Y(batch_indexes, X, y):
-    
-    batch_X = np.empty(shape=(BATCH_SIZE,180,180,3))
+
+    batch_X = np.empty(shape=(BATCH_SIZE, 180, 180, 3))
     batch_y = np.empty(shape=BATCH_SIZE)
 
     for index, batch_index in enumerate(batch_indexes):
 
         path = X[batch_index]
         image = tf.keras.preprocessing.image.load_img(
-            path, grayscale=False, color_mode="rgb", target_size=IMAGE_SIZE, interpolation="nearest"
+            path,
+            grayscale=False,
+            color_mode="rgb",
+            target_size=IMAGE_SIZE,
+            interpolation="nearest",
         )
         input_arr = tf.keras.preprocessing.image.img_to_array(image)
 
-        batch_X[index,:,:,:] = input_arr
+        batch_X[index, :, :, :] = input_arr
         batch_y[index] = get_label_from_filepath(path)
-    
+
     return batch_X, batch_y
+
 
 def make_model(input_shape, num_classes):
     inputs = keras.Input(shape=input_shape)
 
     data_augmentation = keras.Sequential(
-    [
-        layers.RandomFlip("horizontal"),
-        layers.RandomRotation(0.1),
-    ])
+        [
+            layers.RandomFlip("horizontal"),
+            layers.RandomRotation(0.1),
+        ]
+    )
 
     # Image augmentation block
     x = data_augmentation(inputs)
@@ -223,6 +230,7 @@ def make_model(input_shape, num_classes):
     x = layers.Dropout(0.5)(x)
     outputs = layers.Dense(units, activation=activation)(x)
     return keras.Model(inputs, outputs)
+
 
 if __name__ == "__main__":
     tools.algo.execute(Algo())

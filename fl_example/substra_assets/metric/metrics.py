@@ -19,5 +19,5 @@ class AUCMetrics(tools.Metrics):
         return roc_auc_score(y_true, y_pred)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     tools.metrics.execute(AUCMetrics())

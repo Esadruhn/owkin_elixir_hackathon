@@ -1,10 +1,9 @@
-# =======================================================================
-# Federated Learning Cyclic strategy for Hands Ritten Digits Recognition
-# =======================================================================
+# ===================================
+# Federated Learning Cyclic strategy
+# ===================================
 #
-# This file MUST be run from substra/examples/cyclic_strategy/scripts folder.
+# This file MUST be run from fl_example folder.
 #
-# The data used for this example is the Mnist digits dataset from scikit-learn.
 # You can find details of this dataset `here <../assets/dataset/description.md>`
 #
 # A cyclic strategy consists in training your algorithm on one node after the other.
@@ -49,59 +48,31 @@
 # * pull the `connect-tools
 # <https://github.com/owkin/connect-tools#pull-from-public-docker-registry>`
 # docker images
-# * install this example dependencies :
-# `pip install -r substra/examples/cyclic_strategy/requirements.txt`
 #
 # You can either:
 # * run this example in debug mode (no connection to a connect platform)
-# * follow `this tutorial <https://github.com/owkin/tech-team/wiki/Deploy-Connect-locally-with-k3s>`
-# to deploy a local connect platform
-# * have access to a connect platform of your own
+# * have access to a Connect platform
 #
 # If you have access to a connect platform, be sure to log your substra client to the nodes you
 # will use.
-# If you followed the previous tutorial, this bash command will do the trick:
 #
-# ``substra config --profile node-2 http://substra-backend.node-2.com``
-#
-# ``substra login --profile node-2 --username node-2 --password 'p@$swr0d45'``
-#
-# ``substra config --profile node-1 http://substra-backend.node-1.com``
-#
-# ``substra login --profile node-1 --username node-1 --password 'p@$swr0d44'``
-#
-# This example must be run from the `substra/examples/cyclic_strategy/scripts` directory.
-#
-#
-# Datasets generation
-# -------------------
-#
-# Let's generate the data needed for the example.
-#
-# This file will create three folders:
-# * *node_1*: containing training set
-# * *node_2*: containing a training set
-# * *algo_node*: containing the test set
-#
-# To demonstrate the  value of cyclic strategies, we unbalanced the data both in target
-# distribution and volumes accross our training sets.
 
 import json
 import uuid
 import zipfile
 from tqdm import tqdm
 from pathlib import Path
+from typing import List
 
 import substra
-
-from substra.sdk.schemas import DatasetSpec
 from substra.sdk.schemas import Permissions
-from substra.sdk.schemas import DataSampleSpec
-from substra.sdk import DEBUG_OWNER
-
+from substra.sdk.schemas import MetricSpec
+from substra.sdk.schemas import AlgoSpec
+from substra.sdk.schemas import ComputePlanTraintupleSpec
+from substra.sdk.schemas import ComputePlanTesttupleSpec
+from substra.sdk.schemas import ComputePlanSpec
 
 import register_datasamples
-
 
 
 current_directory = Path(__file__)
@@ -130,11 +101,15 @@ N_CENTERS = 3
 
 
 PROFILE_NAMES = ["node_A", "node_B", "node_C"]
-NODES_IDS = ["MyOrg1MSP", "MyOrg2MSP", "MyOrg3MSP",]
+NODES_IDS = [
+    "MyOrg1MSP",
+    "MyOrg2MSP",
+    "MyOrg3MSP",
+]
 ALGO_NODE_PROFILE = PROFILE_NAMES[0]
 TEST_NODE = PROFILE_NAMES[2]
 
-# Interraction with the platform
+# Interaction with the platform
 # -------------------------------
 #
 # In debug mode, there is no notion of nodes. To mimic it, we duplicate an original
@@ -148,7 +123,6 @@ else:
         profile_name: substra.Client.from_config_file(profile_name)
         for profile_name in PROFILE_NAMES
     }
-
 
 
 # Generating the needed datasets
@@ -202,19 +176,15 @@ else:
 # Otherwise the file is shared accross all task, which is not the case when working on a
 # connect platform.
 
-key_path = Path(__file__).parent / 'data_sample_keys.json'
-
+key_path = Path(__file__).parent / "data_sample_keys.json"
 
 if DEBUG:
 
-    key_path = Path(__file__).parent / 'local_data_sample_keys.json'
+    key_path = Path(__file__).parent / "local_data_sample_keys.json"
 
     # If in debug mode, register the data samples
     # In deployed mode, the keys will already be on the platform and we give you directly the json
-    register_datasamples.register_data_samples(
-        clients,
-        key_path=key_path
-    )
+    register_datasamples.register_data_samples(clients, key_path=key_path)
 
 print(client.list_dataset())
 keys = json.loads(key_path.read_text())
@@ -228,12 +198,11 @@ keys = json.loads(key_path.read_text())
 # In our case, we will use multiple metrics : an accuracy and a f1 score.
 # As for the test dataset, we will host the metrics on the algorithm node i.e. node-2.
 
-
-from substra.sdk.schemas import MetricSpec
-
-
 def register_metric(
-    client: substra.Client, metric_folder: Path, metric_name: str, permissions: Permissions
+    client: substra.Client,
+    metric_folder: Path,
+    metric_name: str,
+    permissions: Permissions,
 ) -> str:
     """This function register a metric.
     In the specified folder, there must be a `metric.py`, a `description.md`
@@ -327,8 +296,6 @@ tqdm.write("Assets keys have been saved to %s" % key_path.absolute())
 # * **models** : a list containing the resulting model of the latest training task.
 # * **rank** : an integer which represents the the order of execution of our tasks (from 0 to n).
 
-from substra.sdk.schemas import AlgoSpec
-from typing import List
 
 ALGO_DOCKERFILE_FILES: List[Path] = [
     algo_directory / "algo.py",
@@ -381,11 +348,6 @@ algo_key = clients[ALGO_NODE_PROFILE].add_algo(algo)
 # the traintuple_id and the **models** parameter will contain the resulting model of the task
 # identified by the **in_models_ids** parameters.
 
-from substra.sdk.schemas import ComputePlanTraintupleSpec
-from substra.sdk.schemas import ComputePlanTesttupleSpec
-from substra.sdk.schemas import ComputePlanSpec
-
-
 N_ROUNDS = 3
 
 traintuples = []
@@ -412,9 +374,7 @@ for _ in range(N_ROUNDS):
         testtuple = ComputePlanTesttupleSpec(
             metric_keys=metric_keys,
             traintuple_id=previous_id,
-            test_data_sample_keys=keys[TEST_NODE][
-                "test_data_samples"
-            ],
+            test_data_sample_keys=keys[TEST_NODE]["test_data_samples"],
             data_manager_key=keys[TEST_NODE]["dataset"],
         )
 
@@ -436,7 +396,9 @@ print(compute_plan_info)
 compute_plan_info.update({"key": compute_plan.key})
 compute_plan_info_path.write_text(json.dumps(compute_plan_info))
 
-tqdm.write("Compute Plan keys have been saved to %s" % compute_plan_info_path.absolute())
+tqdm.write(
+    "Compute Plan keys have been saved to %s" % compute_plan_info_path.absolute()
+)
 
 # Check your compute plan progresses
 # ----------------------------------
@@ -510,46 +472,9 @@ for submitted_testtuple in tqdm(submitted_testtuples):
 # which other person can access a model trained on his data.
 #
 #
-# Deploy this example on three nodes
-# ----------------------------------
-#
-# First, you need to change the *N_CENTERS* variable in this file,
-# `genearate_data_samples.py <./generate_data_samples.py>`_ and
-# `algo.py <./../assets/algo/algo.py>`_
-#
-# Then, delete the node_1, node_2 and algo_node folder.
-#
 # If you are using your own connect platform
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 #
 # * configure and connect your substra client to the third node
 # * add the profile name and the node id to PROFILE_NAMES and NODES_IDS in this file.
 #
-#
-# If you deployed a local connect platform
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# * follow `this tutorial
-# <https://github.com/owkin/tech-team/wiki/Add-a-node-to-a-local-connect-platform>`
-# to add a third node to your k3s cluster.
-#
-# * connect to you three nodes thanks to :
-# ``substra config --profile node-3 http://substra-backend.node-3.com``
-#
-# ``substra login --profile node-3 --username node-3 --password 'p@$swr0d46'``
-#
-# ``substra config --profile node-2 http://substra-backend.node-2.com``
-#
-# ``substra login --profile node-2 --username node-2 --password 'p@$swr0d45'``
-#
-# ``substra config --profile node-1 http://substra-backend.node-1.com``
-#
-# ``substra login --profile node-1 --username node-1 --password 'p@$swr0d44'``
-#
-# * add `node-3` to `PROFILE_NAMES` and `MyOrg2MSP` to `NODES_IDS` in this file.
-#
-#
-# Running the example for three nodes
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# You can re-run this file, everything should work :)

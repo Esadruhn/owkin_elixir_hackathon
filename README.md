@@ -49,6 +49,4 @@ cd owkin_elixir_hackathon/dependencies
 python3 -m pip install *.whl
 ```
 
-You can download the challenge data from: TODO
-
-## Challenge and FL example
+You can download the challenge data from the Kaggle platform.
