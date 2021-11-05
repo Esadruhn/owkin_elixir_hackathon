@@ -52,5 +52,3 @@ python3 -m pip install *.whl
 You can download the challenge data from: TODO
 
 ## Challenge and FL example
-
-
