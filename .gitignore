@@ -144,3 +144,4 @@ dmypy.json
 .pyre/
 *.h5
 fl_example/local_data_sample_keys.json
+fl_example/compute_plan_info.json
