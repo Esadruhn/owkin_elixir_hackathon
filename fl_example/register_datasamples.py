@@ -28,7 +28,7 @@ N_CENTERS = 3
 root_path = Path(__file__).parent
 asset_path = root_path / 'substra_assets'
 
-data_path =  Path('/data') / "challenges_data" / "substra"
+data_path =  Path('/home/user/data')  / "substra"
 
 """
 DATA FOLDER TREE STRUCTURE:
