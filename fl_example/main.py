@@ -399,7 +399,7 @@ compute_plan = clients[ALGO_NODE_PROFILE].add_compute_plan(compute_plan_spec)
 print("Adding compute plan - done")
 
 compute_plan_info = compute_plan_spec.dict(exclude_none=False, by_alias=True)
-print(compute_plan_info)
+# print(compute_plan_info)
 
 compute_plan_info.update({"key": compute_plan.key})
 compute_plan_info_path.write_text(json.dumps(compute_plan_info))
