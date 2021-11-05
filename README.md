@@ -11,12 +11,10 @@ For the development, we can either use your own machine or a VM we setup for you
 The VMs technical specifications are:
 - a P100 GPU
 - 60Gb RAM
-TODO: complete this
 
 and software-wise:
 - Debian 10
 - Python 3.7
-TODO: complete this
 
 You can install any package you want on the VMs, they are yours for the duration of the hackathon
 and will be deleted afterwards.
@@ -26,6 +24,16 @@ To connect to the VM, ask us for the IP and private SSH key. Then you can connec
 ssh user@VM_IP -i path/to/private/key
 ```
 
+On the VM, there is already a virtual environment that you can use: `source /home/user/elixenv/bin/activate` with the dependencies installed.
+You can also create your own virtual environment. In that case, you need to install the substra and substratools packages:
+
+```sh
+cd owkin_elixir_hackathon/dependencies
+python3 -m pip install *.whl
+```
+
+The `/home/user/owkin_elixir_hackathon` directory is a clone of the Github repository: https://github.com/Esadruhn/owkin_elixir_hackathon
+
 ### Use your own computer
 
 If you use your own machine, you need the following:
@@ -33,6 +41,16 @@ If you use your own machine, you need the following:
 - have Docker installed and configured, be comfortable with Docker running as root
 - Python 3.7 or higher
 
-We will give you access to the libraries:
-- TODO: give path to wheels + how to install them
+You need to install the substra and substratools packages:
+
+```sh
+git clone https://github.com/Esadruhn/owkin_elixir_hackathon.git
+cd owkin_elixir_hackathon/dependencies
+python3 -m pip install *.whl
+```
+
+You can download the challenge data from: TODO
+
+## Challenge and FL example
+
 
