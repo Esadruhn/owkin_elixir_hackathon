@@ -34,6 +34,26 @@ python3 -m pip install *.whl
 
 The `/home/user/owkin_elixir_hackathon` directory is a clone of the Github repository: https://github.com/Esadruhn/owkin_elixir_hackathon
 
+#### Use jupyter notebooks
+
+Create a SSH tunnel when connecting to the VM.
+
+For example in my ssh config file I add the following lines:
+
+```yaml
+Host elixir_instance_2
+	HostName REPLACE_BY_THE_VM_IP
+	User user
+	ForwardAgent yes
+	IdentityFile ~/.ssh/id_rsa_hackathon
+	LocalForward 10117 127.0.0.1:10117
+```
+then I connect to the VM with `ssh elixir_instance_2`
+on the VM I do: `jupyter notebook --no-browser --port=10117`
+and on my computer I go to the URL `localhost:10117`
+
+You can use any port, 10117 is an example.
+
 ### Use your own computer
 
 If you use your own machine, you need the following:
