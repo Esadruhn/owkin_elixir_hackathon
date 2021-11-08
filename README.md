@@ -54,6 +54,19 @@ and on my computer I go to the URL `localhost:10117`
 
 You can use any port, 10117 is an example.
 
+When you use the jupyter notebook, you must be careful it uses the right Python: you want it to use the one from your virtual environment. For this,
+you need to create what we call a **jupyter kernel**.
+If you use the virtual environment that is already present:
+
+```sh
+source /home/user/elixenv/bin/activate
+pip install jupyter
+pip install --user ipykernel
+python -m ipykernel install --user --name=elixirkernel
+```
+
+when you create a notebook, you’ll need to select this kernel.
+
 ### Use your own computer
 
 If you use your own machine, you need the following:
