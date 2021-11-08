@@ -61,8 +61,8 @@ If you use the virtual environment that is already present:
 ```sh
 source /home/user/elixenv/bin/activate
 pip install jupyter
-pip install --user ipykernel
-python -m ipykernel install --user --name=elixirkernel
+pip install ipykernel
+python -m ipykernel install --name=elixirkernel
 ```
 
 when you create a notebook, you’ll need to select this kernel.
