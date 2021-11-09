@@ -36,9 +36,39 @@ The `/home/user/owkin_elixir_hackathon` directory is a clone of the Github repos
 
 #### Use jupyter notebooks
 
-Create a SSH tunnel when connecting to the VM.
+1. Create a SSH tunnel when connecting to the VM:
 
-For example in my ssh config file I add the following lines:
+`ssh user@VM_IP -i path/to/private/key -L localhost:10117:localhost:10117`
+
+replace `VM_IP` by the IP of the VM, and the `path/to/private/key` by the path to the private key.
+
+You can use any port, 10117 is an example.
+
+2. Install Jupyter on the VM and create the kernel
+
+When you use the jupyter notebook, you must be careful it uses the right Python: you want it to use the one from your virtual environment. For this,
+you need to create what we call a **jupyter kernel**.
+If you use the virtual environment that is already present:
+
+ ```sh
+source /home/user/elixenv/bin/activate
+pip install jupyter
+pip install ipykernel
+python -m ipykernel install --user --name=elixirkernel
+```
+
+when you create a notebook, you’ll need to select this kernel.
+
+
+3. Launch Jupyter on the right port
+
+`jupyter notebook --no-browser --port=10117`
+
+On your computer go to the URL `localhost:10117`
+
+#### **Advanced users**: define an SSH config
+
+For example in my ssh config file (~/.ssh/config) I add the following lines:
 
 ```yaml
 Host elixir_instance_2
@@ -49,23 +79,6 @@ Host elixir_instance_2
 	LocalForward 10117 127.0.0.1:10117
 ```
 then I connect to the VM with `ssh elixir_instance_2`
-on the VM I do: `jupyter notebook --no-browser --port=10117`
-and on my computer I go to the URL `localhost:10117`
-
-You can use any port, 10117 is an example.
-
-When you use the jupyter notebook, you must be careful it uses the right Python: you want it to use the one from your virtual environment. For this,
-you need to create what we call a **jupyter kernel**.
-If you use the virtual environment that is already present:
-
-```sh
-source /home/user/elixenv/bin/activate
-pip install jupyter
-pip install ipykernel
-python -m ipykernel install --name=elixirkernel
-```
-
-when you create a notebook, you’ll need to select this kernel.
 
 ### Use your own computer
 
@@ -94,3 +107,5 @@ in the `target_1` folder have the label 1 (tumoral).
 ## Share the code
 
 Create your own branch and a PR on this repository. Send us your Github username so that we can add you to the repo.
+
+To create a new branch: `git switch -c name_of_your_branch`
