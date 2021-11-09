@@ -11,6 +11,9 @@ There is [a Kaggle challenge](https://www.kaggle.com/c/biohackathon21-project-30
       - [**Advanced users**: define an SSH config](#advanced-users-define-an-ssh-config)
     - [Use your own computer](#use-your-own-computer)
   - [ML challenge](#ml-challenge)
+  - [FL challenge](#fl-challenge)
+    - [Owkin Connect](#owkin-connect)
+    - [Challenge](#challenge)
   - [Share the code](#share-the-code)
 
 ## Dev environment
@@ -115,6 +118,25 @@ Data: `/home/user/data/ML/train`
 
 The data is in two folders, `target_0` and `target_1`. Images in the `target_0` folder have the label 0 (not tumoral), images
 in the `target_1` folder have the label 1 (tumoral).
+
+Once you have trained your model, you need to perform inference on the test data in `/home/user/data/ML/test` and the submit the results to the [Kaggle platform](https://www.kaggle.com/c/biohackathon21-project-30/overview)
+
+## FL challenge
+### Owkin Connect
+For the FL challenge, the Owkin Connect (also called Substra) software will be used. The software is made up of a python library and a deployed platform on the cloud.
+Documentation for the software can be found in the [substra_materials](substra_materials) folder. In particular there is:
+- a [api_reference](api_reference) folder with the API reference and the description of the main objects.
+- a [quick start notebook](substra_materials/titanic_example/quick_start.ipynb) that shows a simple use of Connect on a single dataset (titanic dataset).
+- the [concept file](substra_materials/concepts.md) that explains the main concepts of Substra.
+
+### Challenge
+
+For the FL challenge we consider three datasets, that are distribued on 3 nodes: A, B and C.
+The train data used for the ML challenge correspond the to node A data. The node B and node C are new.
+
+When you launch FL computations, you can run them locally (debug mode) or in the deployed mode. We advise you to start little experiments locally first. To use the Connect locally you need to put `DEBUG=True` in your main.py file.
+An end to end example is provided in the [fl_example](fl_example) folder.
+
 
 ## Share the code
 
