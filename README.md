@@ -83,3 +83,14 @@ python3 -m pip install *.whl
 ```
 
 You can download the challenge data from the Kaggle platform.
+
+## ML challenge
+
+Data: `/home/user/data/ML/train`
+
+The data is in two folders, `target_0` and `target_1`. Images in the `target_0` folder have the label 0 (not tumoral), images
+in the `target_1` folder have the label 1 (tumoral).
+
+## Share the code
+
+Create your own branch and a PR on this repository. Send us your Github username so that we can add you to the repo.
