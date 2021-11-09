@@ -2,6 +2,15 @@
 
 Welcome to project 30 !
 
+- [Elixir hackathon - project 30:](#elixir-hackathon---project-30)
+  - [Dev environment](#dev-environment)
+    - [Use a VM](#use-a-vm)
+      - [Use jupyter notebooks](#use-jupyter-notebooks)
+      - [**Advanced users**: define an SSH config](#advanced-users-define-an-ssh-config)
+    - [Use your own computer](#use-your-own-computer)
+  - [ML challenge](#ml-challenge)
+  - [Share the code](#share-the-code)
+
 ## Dev environment
 
 For the development, we can either use your own machine or a VM we setup for you.
