@@ -2,7 +2,7 @@
 
 Welcome to project 30 !
 
-There is [a Kaggle challenge](https://www.kaggle.com/c/biohackathon21-project-30/overview) for this hackathon.
+There is [a Kaggle challenge](https://www.kaggle.com/t/b2b76461caad4eeea06b7e0c3ff26712) for this hackathon.
 
 - [Elixir hackathon - project 30](#elixir-hackathon---project-30)
   - [Dev environment](#dev-environment)
@@ -119,7 +119,14 @@ Data: `/home/user/data/ML/train`
 The data is in two folders, `target_0` and `target_1`. Images in the `target_0` folder have the label 0 (not tumoral), images
 in the `target_1` folder have the label 1 (tumoral).
 
-Once you have trained your model, you need to perform inference on the test data in `/home/user/data/ML/test` and the submit the results to the [Kaggle platform](https://www.kaggle.com/c/biohackathon21-project-30/overview)
+Once you have trained your model, you need to perform inference on the test data in `/home/user/data/ML/test`, create a CSV file and the submit the results to the [Kaggle platform](https://www.kaggle.com/t/b2b76461caad4eeea06b7e0c3ff26712)
+To create the CSV file you can use the following code:
+
+```
+df_submission = pd.DataFrame(data={'file_paths': file_paths, 'predictions': predictions})
+df_submission["file_paths"] = df_submission["file_paths"].apply(lambda x: x.replace("/home/user/data/test","/data/challenges_data/test"))
+```
+What the second line does is that it rewrites the filepath to be in the same format that Kaggle expects.
 
 ## FL challenge
 ### Owkin Connect
