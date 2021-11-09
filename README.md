@@ -36,7 +36,9 @@ The `/home/user/owkin_elixir_hackathon` directory is a clone of the Github repos
 
 #### Use jupyter notebooks
 
-1. Create a SSH tunnel when connecting to the VM:
+1. Create a SSH tunnel when connecting to the VM
+
+Add `-L localhost:10117:localhost:10117` to the ssh command:
 
 `ssh user@VM_IP -i path/to/private/key -L localhost:10117:localhost:10117`
 
