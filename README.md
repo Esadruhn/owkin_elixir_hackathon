@@ -2,6 +2,8 @@
 
 Welcome to project 30 !
 
+There is [a Kaggle challenge](https://www.kaggle.com/c/biohackathon21-project-30/overview) for this hackathon.
+
 - [Elixir hackathon - project 30:](#elixir-hackathon---project-30)
   - [Dev environment](#dev-environment)
     - [Use a VM](#use-a-vm)
