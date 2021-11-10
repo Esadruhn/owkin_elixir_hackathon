@@ -389,7 +389,7 @@ for _ in range(N_ROUNDS):
 
         testtuples.append(testtuple)
 
-
+last_traintuple_id = previous_id
 compute_plan_spec = ComputePlanSpec(
     traintuples=traintuples,
     testtuples=testtuples,
@@ -440,6 +440,12 @@ for submitted_testtuple in tqdm(submitted_testtuples):
     perfs["AUC"] = perfs.pop(auc_metric_key)
 
     tqdm.write("rank: %s, perf: %s" % (submitted_testtuple.rank, perfs))
+
+client.download_model_from_traintuple(last_traintuple_id, folder=Path.cwd())
+
+# The load model function should be the same as the one in the algo
+from tensorflow import keras
+keras.models.load_model(str(Path.cwd() / 'model'))
 
 
 # Permission
