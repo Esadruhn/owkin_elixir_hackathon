@@ -358,7 +358,7 @@ algo_key = client.add_algo(algo)
 # the traintuple_id and the **models** parameter will contain the resulting model of the task
 # identified by the **in_models_ids** parameters.
 
-N_ROUNDS = 2
+N_ROUNDS = 3
 
 traintuples = []
 testtuples = []
@@ -381,7 +381,7 @@ for _ in range(N_ROUNDS):
         traintuples.append(traintuple)
         previous_id = traintuple.traintuple_id
 
-        """
+        # Remove or put one testtuple every n epochs to make it faster
         testtuple = ComputePlanTesttupleSpec(
             metric_keys=metric_keys,
             traintuple_id=previous_id,
@@ -390,7 +390,6 @@ for _ in range(N_ROUNDS):
         )
 
         testtuples.append(testtuple)
-        """
 
 last_traintuple = traintuple
 compute_plan_spec = ComputePlanSpec(
