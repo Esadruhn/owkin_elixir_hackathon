@@ -444,10 +444,13 @@ for submitted_testtuple in tqdm(submitted_testtuples):
 
     tqdm.write("rank: %s, perf: %s" % (submitted_testtuple.rank, perfs))
 
-client.download_model_from_traintuple(last_traintuple.key, folder=Path.cwd())
+traintuple = client.get_traintuple(last_traintuple.traintuple_id)
+client.download_model_from_traintuple(traintuple.key, folder=Path.cwd())
 
 # Make predictions on the test set
 # -----------------------------------
+
+tqdm.write("Create the Kaggle submission file.")
 
 # The load model function should be the same as the one in the algo
 from tensorflow import keras
@@ -455,7 +458,7 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 
-model = keras.models.load_model(str(Path.cwd() / f'model_{last_traintuple.train.models[0].key}'))
+model = keras.models.load_model(str(Path.cwd() / f'model_{traintuple.train.models[0].key}'))
 model = keras.models.load_model(str(Path.cwd() / f'model_d0ba9dff296242cf82927f184f99d4bb'))
 
 image_size = (180, 180)
@@ -483,8 +486,13 @@ df_submission = pd.DataFrame(data={
 })
 df_submission["file_paths"] = df_submission["file_paths"].apply(
     lambda x: x.replace("/home/user/data/test", "/data/challenges_data/test"))
-df_submission.to_csv('df_submission.csv', index=False)
-df_submission.head()
+
+submission_filepath = Path(__file__).resolve().parents[1] / 'df_submission.csv'
+df_submission.to_csv(submission_filepath, index=False)
+
+tqdm.write(f"Created the file at {submission_filepath}")
+
+print(df_submission.head())
 
 # Permission
 # -----------
