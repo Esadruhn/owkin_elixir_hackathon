@@ -459,7 +459,6 @@ import numpy as np
 import pandas as pd
 
 model = keras.models.load_model(str(Path.cwd() / f'model_{traintuple.train.models[0].key}'))
-model = keras.models.load_model(str(Path.cwd() / f'model_d0ba9dff296242cf82927f184f99d4bb'))
 
 image_size = (180, 180)
 batch_size = 32
