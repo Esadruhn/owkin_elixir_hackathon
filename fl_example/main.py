@@ -132,6 +132,7 @@ else:
         for profile_name in PROFILE_NAMES
     }
 
+client = clients[ALGO_NODE_PROFILE]
 
 # Generating the needed datasets
 # ------------------------------
@@ -327,7 +328,7 @@ algo = AlgoSpec(
     category=substra.sdk.schemas.AlgoCategory.simple,
 )
 
-algo_key = clients[ALGO_NODE_PROFILE].add_algo(algo)
+algo_key = client.add_algo(algo)
 
 # Traintuple, testtuple and compute plan
 # --------------------------------------
@@ -395,7 +396,7 @@ compute_plan_spec = ComputePlanSpec(
 )
 
 print("Adding compute plan")
-compute_plan = clients[ALGO_NODE_PROFILE].add_compute_plan(compute_plan_spec)
+compute_plan = client.add_compute_plan(compute_plan_spec)
 print("Adding compute plan - done")
 
 compute_plan_info = compute_plan_spec.dict(exclude_none=False, by_alias=True)
@@ -423,6 +424,8 @@ client.get_compute_plan(compute_plan.key)
 # the evolution of your compute plan. For example:
 import time
 
+tqdm.write("Waiting for the compute plan to finish to get the performances.")
+
 submitted_testtuples = client.list_testtuple(
     filters=[f'testtuple:compute_plan_key:{compute_plan_info["key"]}']
 )
@@ -434,7 +437,7 @@ for submitted_testtuple in tqdm(submitted_testtuples):
         time.sleep(0.5)
     submitted_testtuple = client.get_testtuple(submitted_testtuple.key)
     perfs = submitted_testtuple.test.perfs
-    perfs["accuracy"] = perfs.pop(auc_metric_key)
+    perfs["AUC"] = perfs.pop(auc_metric_key)
 
     tqdm.write("rank: %s, perf: %s" % (submitted_testtuple.rank, perfs))
 
