@@ -1,0 +1,73 @@
+,PassengerId,Survived,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked
+873,874,0,3,"Vander Cruyssen, Mr. Victor",male,47.0,0,0,345765,9.0,,S
+57,58,0,3,"Novel, Mr. Mansouer",male,28.5,0,0,2697,7.2292,,C
+654,655,0,3,"Hegarty, Miss. Hanora ""Nora""",female,18.0,0,0,365226,6.75,,Q
+36,37,1,3,"Mamee, Mr. Hanna",male,,0,0,2677,7.2292,,C
+418,419,0,2,"Matthews, Mr. William John",male,30.0,0,0,28228,13.0,,S
+154,155,0,3,"Olsen, Mr. Ole Martin",male,,0,0,Fa 265302,7.3125,,S
+528,529,0,3,"Salonen, Mr. Johan Werner",male,39.0,0,0,3101296,7.925,,S
+241,242,1,3,"Murphy, Miss. Katherine ""Kate""",female,,1,0,367230,15.5,,Q
+391,392,1,3,"Jansson, Mr. Carl Olof",male,21.0,0,0,350034,7.7958,,S
+260,261,0,3,"Smith, Mr. Thomas",male,,0,0,384461,7.75,,Q
+756,757,0,3,"Carlsson, Mr. August Sigfrid",male,28.0,0,0,350042,7.7958,,S
+725,726,0,3,"Oreskovic, Mr. Luka",male,20.0,0,0,315094,8.6625,,S
+138,139,0,3,"Osen, Mr. Olaf Elon",male,16.0,0,0,7534,9.2167,,S
+849,850,1,1,"Goldenberg, Mrs. Samuel L (Edwiga Grabowska)",female,,1,0,17453,89.1042,C92,C
+139,140,0,1,"Giglio, Mr. Victor",male,24.0,0,0,PC 17593,79.2,B86,C
+632,633,1,1,"Stahelin-Maeglin, Dr. Max",male,32.0,0,0,13214,30.5,B50,C
+238,239,0,2,"Pengelly, Mr. Frederick William",male,19.0,0,0,28665,10.5,,S
+612,613,1,3,"Murphy, Miss. Margaret Jane",female,,1,0,367230,15.5,,Q
+806,807,0,1,"Andrews, Mr. Thomas Jr",male,39.0,0,0,112050,0.0,A36,S
+59,60,0,3,"Goodwin, Master. William Frederick",male,11.0,5,2,CA 2144,46.9,,S
+888,889,0,3,"Johnston, Miss. Catherine Helen ""Carrie""",female,,1,2,W./C. 6607,23.45,,S
+623,624,0,3,"Hansen, Mr. Henry Damsgaard",male,21.0,0,0,350029,7.8542,,S
+808,809,0,2,"Meyer, Mr. August",male,39.0,0,0,248723,13.0,,S
+735,736,0,3,"Williams, Mr. Leslie",male,28.5,0,0,54636,16.1,,S
+58,59,1,2,"West, Miss. Constance Mirium",female,5.0,1,2,C.A. 34651,27.75,,S
+629,630,0,3,"O'Connell, Mr. Patrick D",male,,0,0,334912,7.7333,,Q
+648,649,0,3,"Willey, Mr. Edward",male,,0,0,S.O./P.P. 751,7.55,,S
+448,449,1,3,"Baclini, Miss. Marie Catherine",female,5.0,2,1,2666,19.2583,,C
+217,218,0,2,"Jacobsohn, Mr. Sidney Samuel",male,42.0,1,0,243847,27.0,,S
+135,136,0,2,"Richard, Mr. Emile",male,23.0,0,0,SC/PARIS 2133,15.0458,,C
+31,32,1,1,"Spencer, Mrs. William Augustus (Marie Eugenie)",female,,1,0,PC 17569,146.5208,B78,C
+385,386,0,2,"Davies, Mr. Charles Henry",male,18.0,0,0,S.O.C. 14879,73.5,,S
+531,532,0,3,"Toufik, Mr. Nakli",male,,0,0,2641,7.2292,,C
+874,875,1,2,"Abelson, Mrs. Samuel (Hannah Wizosky)",female,28.0,1,0,P/PP 3381,24.0,,C
+392,393,0,3,"Gustafsson, Mr. Johan Birger",male,28.0,2,0,3101277,7.925,,S
+173,174,0,3,"Sivola, Mr. Antti Wilhelm",male,21.0,0,0,STON/O 2. 3101280,7.925,,S
+501,502,0,3,"Canavan, Miss. Mary",female,21.0,0,0,364846,7.75,,Q
+123,124,1,2,"Webber, Miss. Susan",female,32.5,0,0,27267,13.0,E101,S
+453,454,1,1,"Goldenberg, Mr. Samuel L",male,49.0,1,0,17453,89.1042,C92,C
+211,212,1,2,"Cameron, Miss. Clear Annie",female,35.0,0,0,F.C.C. 13528,21.0,,S
+675,676,0,3,"Edvardsson, Mr. Gustaf Hjalmar",male,18.0,0,0,349912,7.775,,S
+42,43,0,3,"Kraeff, Mr. Theodor",male,,0,0,349253,7.8958,,C
+158,159,0,3,"Smiljanic, Mr. Mile",male,,0,0,315037,8.6625,,S
+605,606,0,3,"Lindell, Mr. Edvard Bengtsson",male,36.0,1,0,349910,15.55,,S
+422,423,0,3,"Zimmerman, Mr. Leo",male,29.0,0,0,315082,7.875,,S
+148,149,0,2,"Navratil, Mr. Michel (""Louis M Hoffman"")",male,36.5,0,2,230080,26.0,F2,S
+699,700,0,3,"Humblen, Mr. Adolf Mathias Nicolai Olsen",male,42.0,0,0,348121,7.65,F G63,S
+766,767,0,1,"Brewe, Dr. Arthur Jackson",male,,0,0,112379,39.6,,C
+728,729,0,2,"Bryhl, Mr. Kurt Arnold Gottfrid",male,25.0,1,0,236853,26.0,,S
+168,169,0,1,"Baumann, Mr. John D",male,,0,0,PC 17318,25.925,,S
+741,742,0,1,"Cavendish, Mr. Tyrell William",male,36.0,1,0,19877,78.85,C46,S
+34,35,0,1,"Meyer, Mr. Edgar Joseph",male,28.0,1,0,PC 17604,82.1708,,C
+298,299,1,1,"Saalfeld, Mr. Adolphe",male,,0,0,19988,30.5,C106,S
+698,699,0,1,"Thayer, Mr. John Borland",male,49.0,1,1,17421,110.8833,C68,C
+889,890,1,1,"Behr, Mr. Karl Howell",male,26.0,0,0,111369,30.0,C148,C
+186,187,1,3,"O'Brien, Mrs. Thomas (Johanna ""Hannah"" Godfrey)",female,,1,0,370365,15.5,,Q
+444,445,1,3,"Johannesen-Bratthammer, Mr. Bernt",male,,0,0,65306,8.1125,,S
+831,832,1,2,"Richards, Master. George Sibley",male,0.83,1,1,29106,18.75,,S
+887,888,1,1,"Graham, Miss. Margaret Edith",female,19.0,0,0,112053,30.0,B42,S
+86,87,0,3,"Ford, Mr. William Neal",male,16.0,1,3,W./C. 6608,34.375,,S
+144,145,0,2,"Andrew, Mr. Edgardo Samuel",male,18.0,0,0,231945,11.5,,S
+265,266,0,2,"Reeves, Mr. David",male,36.0,0,0,C.A. 17248,10.5,,S
+341,342,1,1,"Fortune, Miss. Alice Elizabeth",female,24.0,3,2,19950,263.0,C23 C25 C27,S
+6,7,0,1,"McCarthy, Mr. Timothy J",male,54.0,0,0,17463,51.8625,E46,S
+374,375,0,3,"Palsson, Miss. Stina Viola",female,3.0,3,1,349909,21.075,,S
+70,71,0,2,"Jenkin, Mr. Stephen Curnow",male,32.0,0,0,C.A. 33111,10.5,,S
+172,173,1,3,"Johnson, Miss. Eleanor Ileen",female,1.0,1,1,347742,11.1333,,S
+727,728,1,3,"Mannion, Miss. Margareth",female,,0,0,36866,7.7375,,Q
+661,662,0,3,"Badt, Mr. Mohamed",male,40.0,0,0,2623,7.225,,C
+588,589,0,3,"Gilinski, Mr. Eliezer",male,22.0,0,0,14973,8.05,,S
+594,595,0,2,"Chapman, Mr. John Henry",male,37.0,1,0,SC/AH 29037,26.0,,S
+480,481,0,3,"Goodwin, Master. Harold Victor",male,9.0,5,2,CA 2144,46.9,,S

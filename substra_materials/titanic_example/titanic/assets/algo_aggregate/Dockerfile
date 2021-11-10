@@ -1,8 +1,8 @@
 # this base image works in both CPU and GPU enabled environments
-FROM gcr.io/connect-314908/connect-tools:0.8.0
+FROM esadruhn/elixir_connect:0.9.0
 
 # install dependencies
-RUN pip3 install pandas numpy sklearn pillow scipy keras
+RUN pip3 install pandas numpy sklearn
 
 # add your algorithm script to docker image
 ADD algo.py .
