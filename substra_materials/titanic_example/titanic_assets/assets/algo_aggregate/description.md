@@ -1,1 +1,0 @@
-# Aggregation algorithm for logistic regression
