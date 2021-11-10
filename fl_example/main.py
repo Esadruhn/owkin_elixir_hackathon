@@ -388,9 +388,9 @@ for _ in range(N_ROUNDS):
             test_data_sample_keys=keys[TEST_NODE]["test_data_samples"],
             data_manager_key=keys[TEST_NODE]["dataset"],
         )
-        """
 
         testtuples.append(testtuple)
+        """
 
 last_traintuple = traintuple
 compute_plan_spec = ComputePlanSpec(
