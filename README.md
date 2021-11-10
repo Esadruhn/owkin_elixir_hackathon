@@ -150,6 +150,11 @@ The train data used for the ML challenge correspond the to node A data. The node
 When you launch FL computations, you can run them locally (debug mode) or in the deployed mode. We advise you to start little experiments locally first. To use the Connect locally you need to put `DEBUG=True` in your main.py file.
 An end to end example is provided in the [fl_example](fl_example) folder.
 
+### Suggested workflow
+
+- Start by looking at the [quick start notebook](substra_materials/titanic_example/quick_start.ipynb). Understand it and run it in both debug and remote mode.
+- Then look at the [fl_example](fl_example). Make sure you can run the `main.py` file in debug mode. Once it's working you can modify the `algo.py` file to use your own algorithm.
+
 
 ## Share the code
 
