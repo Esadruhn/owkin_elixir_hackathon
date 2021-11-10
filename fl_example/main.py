@@ -458,7 +458,8 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 
-model = keras.models.load_model(str(Path.cwd() / f'model_{traintuple.train.models[0].key}'))
+model_path = Path(__file__).resolve().parents[1] / 'out' / f'model_{traintuple.train.models[0].key}'
+model = keras.models.load_model(str(model_path))
 
 image_size = (180, 180)
 batch_size = 32
@@ -481,17 +482,21 @@ file_paths = test_ds.file_paths
 
 df_submission = pd.DataFrame(data={
     'file_paths': file_paths,
-    'predictions': labels
+    'predictions': predictions
 })
 df_submission["file_paths"] = df_submission["file_paths"].apply(
     lambda x: x.replace("/home/user/data/test", "/data/challenges_data/test"))
 
-submission_filepath = Path(__file__).resolve().parents[1] / 'df_submission.csv'
+submission_filepath = Path(
+    __file__).resolve().parents[1] / 'out' / 'df_submission.csv'
 df_submission.to_csv(submission_filepath, index=False)
+
+print(df_submission.head())
 
 tqdm.write(f"Created the file at {submission_filepath}")
 
-print(df_submission.head())
+# Delete the downloaded model
+model_path.unlink()
 
 # Permission
 # -----------
