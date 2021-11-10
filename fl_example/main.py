@@ -81,6 +81,7 @@ current_directory = Path(__file__)
 assets_directory = current_directory.parent / "substra_assets"
 algo_directory = assets_directory / "algo"
 compute_plan_info_path = current_directory.parent / "compute_plan_info.json"
+test_data_path = Path('/') / 'home' / 'user' / 'data' / 'test'
 
 
 # Configuration of our connect platform
@@ -380,6 +381,7 @@ for _ in range(N_ROUNDS):
         traintuples.append(traintuple)
         previous_id = traintuple.traintuple_id
 
+        # Remove or put one testtuple every n epochs to make it faster
         testtuple = ComputePlanTesttupleSpec(
             metric_keys=metric_keys,
             traintuple_id=previous_id,
@@ -389,7 +391,7 @@ for _ in range(N_ROUNDS):
 
         testtuples.append(testtuple)
 
-
+last_traintuple = traintuple
 compute_plan_spec = ComputePlanSpec(
     traintuples=traintuples,
     testtuples=testtuples,
@@ -441,6 +443,70 @@ for submitted_testtuple in tqdm(submitted_testtuples):
 
     tqdm.write("rank: %s, perf: %s" % (submitted_testtuple.rank, perfs))
 
+# Make predictions on the test set
+# -----------------------------------
+
+tqdm.write("Create the Kaggle submission file.")
+
+from tensorflow import keras
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+
+# get the last traintuple of the compute plan
+traintuple = client.get_traintuple(last_traintuple.traintuple_id)
+
+# Download the associated model
+model_path = Path(__file__).resolve().parents[1] / 'out'
+model_filename = f'model_{traintuple.train.models[0].key}'
+client.download_model_from_traintuple(traintuple.key, folder=model_path)
+
+# SPECIFIC TO YOUR ALGO
+# -----------------------
+#
+# Here we are loading the model that your algo produced
+# so if you change the algo, for example if you use PyTorch,
+# then you might need to change this part as well.
+
+# Load the model and create predictions: this code depends on the algo code
+model = keras.models.load_model(str(model_path / model_filename))
+
+image_size = (180, 180)
+batch_size = 32
+test_ds = tf.keras.preprocessing.image_dataset_from_directory(
+    directory=test_data_path,
+    labels="inferred",
+    label_mode="binary",
+    shuffle=False,
+    seed=0,
+    image_size=image_size,
+    batch_size=batch_size,
+)
+
+predictions = np.array([])
+labels = np.array([])
+for x, y in test_ds:
+    predictions = np.concatenate([predictions, model.predict(x).ravel()])
+    labels = np.concatenate([labels, y.numpy().ravel()])
+file_paths = test_ds.file_paths
+
+df_submission = pd.DataFrame(data={
+    'file_paths': file_paths,
+    'predictions': predictions
+})
+df_submission["file_paths"] = df_submission["file_paths"].apply(
+    lambda x: x.replace("/home/user/data/test", "/data/challenges_data/test"))
+
+submission_filepath = Path(
+    __file__).resolve().parents[1] / 'out' / 'df_submission.csv'
+df_submission.to_csv(submission_filepath, index=False)
+
+print(df_submission.head())
+
+tqdm.write(f"Created the file at {submission_filepath}")
+
+# Delete the downloaded model
+(model_path / model_filename).unlink()
 
 # Permission
 # -----------
