@@ -357,7 +357,7 @@ algo_key = client.add_algo(algo)
 # the traintuple_id and the **models** parameter will contain the resulting model of the task
 # identified by the **in_models_ids** parameters.
 
-N_ROUNDS = 3
+N_ROUNDS = 2
 
 traintuples = []
 testtuples = []
@@ -380,12 +380,14 @@ for _ in range(N_ROUNDS):
         traintuples.append(traintuple)
         previous_id = traintuple.traintuple_id
 
+        """
         testtuple = ComputePlanTesttupleSpec(
             metric_keys=metric_keys,
             traintuple_id=previous_id,
             test_data_sample_keys=keys[TEST_NODE]["test_data_samples"],
             data_manager_key=keys[TEST_NODE]["dataset"],
         )
+        """
 
         testtuples.append(testtuple)
 
