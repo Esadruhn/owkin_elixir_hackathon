@@ -444,9 +444,6 @@ for submitted_testtuple in tqdm(submitted_testtuples):
 
     tqdm.write("rank: %s, perf: %s" % (submitted_testtuple.rank, perfs))
 
-traintuple = client.get_traintuple(last_traintuple.traintuple_id)
-client.download_model_from_traintuple(traintuple.key, folder=Path.cwd())
-
 # Make predictions on the test set
 # -----------------------------------
 
@@ -458,8 +455,12 @@ import tensorflow as tf
 import numpy as np
 import pandas as pd
 
-model_path = Path(__file__).resolve().parents[1] / 'out' / f'model_{traintuple.train.models[0].key}'
-model = keras.models.load_model(str(model_path))
+model_path = Path(__file__).resolve().parents[1] / 'out'
+model_filename = f'model_{traintuple.train.models[0].key}'
+
+traintuple = client.get_traintuple(last_traintuple.traintuple_id)
+client.download_model_from_traintuple(traintuple.key, folder=model_path)
+model = keras.models.load_model(str(model_path / model_filename))
 
 image_size = (180, 180)
 batch_size = 32
@@ -496,7 +497,7 @@ print(df_submission.head())
 tqdm.write(f"Created the file at {submission_filepath}")
 
 # Delete the downloaded model
-model_path.unlink()
+(model_path / model_filename).unlink()
 
 # Permission
 # -----------
