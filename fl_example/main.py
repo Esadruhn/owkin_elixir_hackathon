@@ -81,6 +81,7 @@ current_directory = Path(__file__)
 assets_directory = current_directory.parent / "substra_assets"
 algo_directory = assets_directory / "algo"
 compute_plan_info_path = current_directory.parent / "compute_plan_info.json"
+test_data_path = Path('/') / 'home' / 'user' / 'data' / 'test'
 
 
 # Configuration of our connect platform
@@ -391,7 +392,7 @@ for _ in range(N_ROUNDS):
 
         testtuples.append(testtuple)
 
-last_traintuple_id = previous_id
+last_traintuple = traintuple
 compute_plan_spec = ComputePlanSpec(
     traintuples=traintuples,
     testtuples=testtuples,
@@ -443,12 +444,47 @@ for submitted_testtuple in tqdm(submitted_testtuples):
 
     tqdm.write("rank: %s, perf: %s" % (submitted_testtuple.rank, perfs))
 
-client.download_model_from_traintuple(last_traintuple_id, folder=Path.cwd())
+client.download_model_from_traintuple(last_traintuple.key, folder=Path.cwd())
+
+# Make predictions on the test set
+# -----------------------------------
 
 # The load model function should be the same as the one in the algo
 from tensorflow import keras
-keras.models.load_model(str(Path.cwd() / 'model'))
+import tensorflow as tf
+import numpy as np
+import pandas as pd
 
+model = keras.models.load_model(str(Path.cwd() / f'model_{last_traintuple.train.models[0].key}'))
+model = keras.models.load_model(str(Path.cwd() / f'model_d0ba9dff296242cf82927f184f99d4bb'))
+
+image_size = (180, 180)
+batch_size = 32
+test_ds = tf.keras.preprocessing.image_dataset_from_directory(
+    directory=test_data_path,
+    labels="inferred",
+    label_mode="binary",
+    shuffle=False,
+    seed=0,
+    image_size=image_size,
+    batch_size=batch_size,
+)
+
+predictions = np.array([])
+labels = np.array([])
+for x, y in test_ds:
+    predictions = np.concatenate([predictions, model.predict(x).ravel()])
+    labels = np.concatenate([labels, y.numpy().ravel()])
+file_paths = test_ds.file_paths
+
+df_submission = pd.DataFrame(data={
+    'file_paths': file_paths,
+    'predictions': labels
+})
+df_submission["file_paths"] = df_submission["file_paths"].apply(
+    lambda x: x.replace("/home/user/data/test", "/data/challenges_data/test"))
+df_submission.to_csv('df_submission.csv', index=False)
+df_submission.head()
 
 # Permission
 # -----------
