@@ -149,4 +149,10 @@ An end to end example is provided in the [fl_example](fl_example) folder.
 
 Create your own branch and a PR on this repository. Send us your Github username so that we can add you to the repo.
 
-To create a new branch: `git switch -c name_of_your_branch`
+To create a new branch: `git checkout -b name_of_your_branch`, when you push for the first time git will tell you to add a --set-upstream argument, copy paste the command it gives you.
+
+Afterwards, you can commit and push normally on your branch.
+
+Git now requires an access token to be able to push your changes:
+
+https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/creating-a-personal-access-token
