@@ -449,17 +449,27 @@ for submitted_testtuple in tqdm(submitted_testtuples):
 
 tqdm.write("Create the Kaggle submission file.")
 
-# The load model function should be the same as the one in the algo
 from tensorflow import keras
 import tensorflow as tf
 import numpy as np
 import pandas as pd
 
+# get the last traintuple of the compute plan
+traintuple = client.get_traintuple(last_traintuple.traintuple_id)
+
+# Download the associated model
 model_path = Path(__file__).resolve().parents[1] / 'out'
 model_filename = f'model_{traintuple.train.models[0].key}'
-
-traintuple = client.get_traintuple(last_traintuple.traintuple_id)
 client.download_model_from_traintuple(traintuple.key, folder=model_path)
+
+# SPECIFIC TO YOUR ALGO
+# -----------------------
+#
+# Here we are loading the model that your algo produced
+# so if you change the algo, for example if you use PyTorch,
+# then you might need to change this part as well.
+
+# Load the model and create predictions: this code depends on the algo code
 model = keras.models.load_model(str(model_path / model_filename))
 
 image_size = (180, 180)
