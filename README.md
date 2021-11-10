@@ -128,6 +128,12 @@ df_submission["file_paths"] = df_submission["file_paths"].apply(lambda x: x.repl
 ```
 What the second line does is that it rewrites the filepath to be in the same format that Kaggle expects.
 
+To transfer the submission file from the instance to your machine, you can do:
+`scp user@VM_IP:/home/user/path/to/submission/submission_file.csv .`
+
+
+
+
 ## FL challenge
 ### Owkin Connect
 For the FL challenge, the Owkin Connect (also called Substra) software will be used. The software is made up of a python library and a deployed platform on the cloud.
