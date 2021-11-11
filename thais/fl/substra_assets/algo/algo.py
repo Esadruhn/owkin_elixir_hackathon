@@ -48,27 +48,27 @@ class CamelyonDataset(torch.utils.data.Dataset):
 
     def __init__(self, data_path, labels=None, transform=None):
         self.transform = transform
-        self.samples = data_path
+
         self.labels = labels
+        self.samples = data_path
+
 
     def __len__(self):
         return len(self.samples)
     
     def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-    
         img_path = self.samples[idx]
-        data_path = str(img_path)
-        image = read_image(data_path).to(torch_device)
+        image = read_image(img_path).to(torch_device)
         image = (1.0 / 255.0) * image
         
         label = self.labels[idx] if self.labels is not None else None
-        sample = image, label, data_path
+        sample = image, label, img_path
         
         if self.transform:
             sample = self.transform(sample)
-       
+
+        if label is None:
+            return image, img_path
         return sample
 
 def make_model():
@@ -198,16 +198,17 @@ class Algo(tools.algo.Algo):
         # return the predictions of the model on X, for calculating the AUC
         torch_model, _ = model
         torch_model.eval()
-        with torch.no_grad():
 
-            dataset = CamelyonDataset(data_path=X)
-            images, labels, data_paths = dataset[:]
+        dataset = CamelyonDataset(data_path=X)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=len(dataset), shuffle=False, num_workers=0)
+        with torch.no_grad():
+            
+            images, data_paths = next(iter(dataloader))
             
             inputs = images.to(torch_device)
             predictions = torch.sigmoid(torch_model(inputs)).detach().cpu().numpy()
 
         # predictions should be a numpy array of shape (n_samples)
-        assert False, f'PREDICTION TYPE {type(predictions)} {predictions.shape}'
         return predictions
 
     def load_model(self, path):

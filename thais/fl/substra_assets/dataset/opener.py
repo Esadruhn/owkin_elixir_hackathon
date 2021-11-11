@@ -15,7 +15,6 @@ class Opener(tools.Opener):
         for folder in folders:
             files = Path(folder).glob("*")
             image_paths.extend([str(f.resolve()) for f in files])
-
         return sorted(image_paths)
 
     def get_y(self, folders):
@@ -25,7 +24,6 @@ class Opener(tools.Opener):
             for file_ in files:
                 label = file_.stem.split("_")[0].lower()
                 image_labels.append((file_.resolve(), LABELS[label]))
-
         return [label for _, label in sorted(image_labels, key=lambda x: x[0])]
 
     def save_predictions(self, y_pred, path):
