@@ -14,30 +14,23 @@ class Opener(tools.Opener):
         image_paths = list()
         for folder in folders:
             files = Path(folder).glob("*")
-            image_paths.extend(list(files))
+            image_paths.extend([str(f.resolve()) for f in files])
 
-        print("In opener - found", len(image_paths), "images")
-        return image_paths
+        return sorted(image_paths)
 
     def get_y(self, folders):
         image_labels = list()
         for folder in folders:
             files = Path(folder).glob("*")
-            for file in files:
-                label = file.stem.split("_")[0].lower()
-                image_labels.append(LABELS[label])
+            for file_ in files:
+                label = file_.stem.split("_")[0].lower()
+                image_labels.append((file_.resolve(), LABELS[label]))
 
-        print("In opener - found", len(image_labels), "labels")
-        return image_labels
+        return [label for _, label in sorted(image_labels, key=lambda x: x[0])]
 
     def save_predictions(self, y_pred, path):
-        print("Saving preds")
-        print("path")
         np.save(path + ".npy", y_pred)
         Path(str(path) + ".npy").rename(str(path))
-        # os.rename(path + ".npy", path)
-
-        print("Saving DONE")
 
     def get_predictions(self, path):
         print("Loading preds")
