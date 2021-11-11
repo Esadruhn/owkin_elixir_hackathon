@@ -14,6 +14,7 @@ There is [a Kaggle challenge](https://www.kaggle.com/t/b2b76461caad4eeea06b7e0c3
   - [FL challenge](#fl-challenge)
     - [Owkin Connect](#owkin-connect)
     - [Challenge](#challenge)
+    - [Suggested workflow](#suggested-workflow)
   - [Share the code](#share-the-code)
 
 ## Dev environment
@@ -132,6 +133,7 @@ To transfer the submission file from the instance to your machine, you can do:
 `scp -i path/to/private/key user@VM_IP:/home/user/path/to/submission/submission_file.csv .`
 
 ## FL challenge
+
 ### Owkin Connect
 For the FL challenge, the Owkin Connect (also called Substra) software will be used. The software is made up of a python library and a deployed platform on the cloud.
 Documentation for the software can be found in the [substra_materials](substra_materials) folder. In particular there is:
@@ -148,6 +150,15 @@ When you launch FL computations, you can run them locally (debug mode) or in the
 An end to end example is provided in the [fl_example](fl_example) folder.
 
 ### Suggested workflow
+
+- Get the latest updates from master
+
+To avoid any conflict, you should put all the code you changed / created in your own folder.
+
+```sh
+git pull
+git pull origin master
+```
 
 - Start by looking at the [quick start notebook](substra_materials/titanic_example/quick_start.ipynb). Understand it and run it in both debug and remote mode.
 - Then look at the [fl_example](fl_example). Make sure you can run the `main.py` file in debug mode. Once it's working you can modify the `algo.py` file to use your own algorithm.
