@@ -9,8 +9,11 @@ from tensorflow.keras import layers
 
 N_UPDATE = 5
 BATCH_SIZE = 32
-N_ROUNDS = 3
 IMAGE_SIZE = (180, 180)
+
+# If you change this value, change it
+# in fl_example/main.py#L361 too
+N_ROUNDS = 3
 
 
 def generate_batch_indexes(index, n_rounds, n_update, batch_size):
