@@ -100,6 +100,7 @@ test_data_path = Path('/') / 'home' / 'user' / 'data' / 'test'
 
 
 DEBUG = True
+IS_REGISTER_DATA_SAMPLES_ON_REMOTE = False
 
 # Change to 'docker' to test with one Docker container per task
 # The 'docker' mode is much slower, but should be tested at
@@ -117,7 +118,6 @@ NODES_IDS = [
 ]
 ALGO_NODE_PROFILE = PROFILE_NAMES[0]
 TEST_NODE = PROFILE_NAMES[2]
-
 # Interaction with the platform
 # -------------------------------
 #
@@ -186,12 +186,12 @@ client = clients[ALGO_NODE_PROFILE]
 # Otherwise the file is shared accross all task, which is not the case when working on a
 # connect platform.
 
-key_path = Path(__file__).parent / "data_sample_keys.json"
-
 if DEBUG:
-
     key_path = Path(__file__).parent / "local_data_sample_keys.json"
+else:
+    key_path = Path(__file__).parent / "data_sample_keys.json"
 
+if DEBUG or IS_REGISTER_DATA_SAMPLES_ON_REMOTE:
     # If in debug mode, register the data samples
     # In deployed mode, the keys will already be on the platform and we give you directly the json
     register_datasamples.register_data_samples(clients, key_path=key_path)
