@@ -360,7 +360,7 @@ algo_key = client.add_algo(algo)
 
 # If you change this value, change it
 # in fl_example/substra_assets/algo/algo.py too
-N_ROUNDS = 3
+N_ROUNDS = 1
 
 traintuples = []
 testtuples = []

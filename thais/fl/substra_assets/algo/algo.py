@@ -199,14 +199,16 @@ class Algo(tools.algo.Algo):
         torch_model, _ = model
         torch_model.eval()
 
+        batch_size = 100
         dataset = CamelyonDataset(data_path=X)
-        dataloader = torch.utils.data.DataLoader(dataset, batch_size=len(dataset), shuffle=False, num_workers=0)
+        dataloader = torch.utils.data.DataLoader(dataset, batch_size=batch_size, shuffle=False, num_workers=0, drop_last=False)
+
+        predictions = np.empty(shape=(len(X)))
         with torch.no_grad():
-            
-            images, data_paths = next(iter(dataloader))
-            
-            inputs = images.to(torch_device)
-            predictions = torch.sigmoid(torch_model(inputs)).detach().cpu().numpy()
+            for index, (images, data_paths) in enumerate(dataloader):
+                inputs = images.to(torch_device)
+                torch_pred = torch.sigmoid(torch_model(inputs)).detach().cpu().numpy()
+                predictions[index*batch_size:index*batch_size+len(torch_pred)] = torch_pred
 
         # predictions should be a numpy array of shape (n_samples)
         return predictions
