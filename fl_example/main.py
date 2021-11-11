@@ -319,7 +319,7 @@ with zipfile.ZipFile(archive_path, "w") as z:
         z.write(filepath, arcname=filepath.name)
 
 algo = AlgoSpec(
-    name="Keras CNN",
+    name="PyTorch CNN",
     file=archive_path,
     description=algo_directory / "description.md",
     permissions={
