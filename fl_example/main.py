@@ -442,7 +442,7 @@ submitted_testtuples = sorted(submitted_testtuples, key=lambda x: x.rank)
 for submitted_testtuple in tqdm(submitted_testtuples):
     while submitted_testtuple.test.perfs is None:
         time.sleep(0.5)
-    submitted_testtuple = client.get_testtuple(submitted_testtuple.key)
+        submitted_testtuple = client.get_testtuple(submitted_testtuple.key)
     perfs = submitted_testtuple.test.perfs
     perfs["AUC"] = perfs.pop(auc_metric_key)
 
