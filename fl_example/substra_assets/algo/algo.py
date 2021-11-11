@@ -66,13 +66,13 @@ class Algo(tools.algo.Algo):
         where you can store information locally.
 
         Args:
-            X (DataFrame): Training features
-            y (DataFrame): Target
-            models (List[Algo]): List of algorithm from the previous step of the compute plan
+            X (List[Path]): Training features, list of paths to the samples
+            y (List[str]): Target, list of labels
+            models (List[model]): List of models from the previous step of the compute plan
             rank (int): The rank of the task in the compute plan
 
         Returns:
-            [Algo]: The updated algorithm after the training for this task
+            [model]: The updated algorithm after the training for this task
         """
         compute_plan_path = Path(self.compute_plan_path)
 
@@ -121,6 +121,7 @@ class Algo(tools.algo.Algo):
         return model
 
     def predict(self, X, model):
+        # X: list of paths to the samples
         # return the predictions of the model on X, for calculating the AUC
         batch_X = np.empty(shape=(len(X), 180, 180, 3))
 
