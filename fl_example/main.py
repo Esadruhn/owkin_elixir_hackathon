@@ -400,6 +400,7 @@ last_traintuple = traintuple
 compute_plan_spec = ComputePlanSpec(
     traintuples=traintuples,
     testtuples=testtuples,
+    clean_models=True,
 )
 
 print("Adding compute plan")
