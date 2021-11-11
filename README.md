@@ -19,6 +19,8 @@ There is [a Kaggle challenge](https://www.kaggle.com/t/b2b76461caad4eeea06b7e0c3
 - [Connect platform](#connect-platform)
   - [URLs](#urls)
   - [Example](#example)
+- [Troubleshooting](#troubleshooting)
+  - [CUDA out of memory](#cuda-out-of-memory)
 
 ## Dev environment
 
@@ -244,3 +246,9 @@ client.add_compute_plan(
 ```
 
 and on the frontend I visualize the assets and the progression of the compute plan
+
+# Troubleshooting
+
+## CUDA out of memory
+
+You may need to close jupyter notebooks and kill running Python / jupyter processes that may hog the GPU resources.
