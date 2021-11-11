@@ -81,6 +81,7 @@ current_directory = Path(__file__)
 assets_directory = current_directory.parent / "substra_assets"
 algo_directory = assets_directory / "algo"
 compute_plan_info_path = current_directory.parent / "compute_plan_info.json"
+test_data_path = Path('/') / 'home' / 'user' / 'data' / 'test'
 
 
 # Configuration of our connect platform
@@ -132,6 +133,7 @@ else:
         for profile_name in PROFILE_NAMES
     }
 
+client = clients[ALGO_NODE_PROFILE]
 
 # Generating the needed datasets
 # ------------------------------
@@ -327,7 +329,7 @@ algo = AlgoSpec(
     category=substra.sdk.schemas.AlgoCategory.simple,
 )
 
-algo_key = clients[ALGO_NODE_PROFILE].add_algo(algo)
+algo_key = client.add_algo(algo)
 
 # Traintuple, testtuple and compute plan
 # --------------------------------------
@@ -356,6 +358,8 @@ algo_key = clients[ALGO_NODE_PROFILE].add_algo(algo)
 # the traintuple_id and the **models** parameter will contain the resulting model of the task
 # identified by the **in_models_ids** parameters.
 
+# If you change this value, change it
+# in fl_example/substra_assets/algo/algo.py too
 N_ROUNDS = 3
 
 traintuples = []
@@ -364,7 +368,7 @@ previous_id = None
 
 metric_keys = [auc_metric_key]
 
-for _ in range(N_ROUNDS):
+for idx in range(N_ROUNDS):
     # This is where you define training plan for each round
     # Here it is : train on node 1, test, train on node 2, test
     for node in PROFILE_NAMES:
@@ -379,23 +383,27 @@ for _ in range(N_ROUNDS):
         traintuples.append(traintuple)
         previous_id = traintuple.traintuple_id
 
-        testtuple = ComputePlanTesttupleSpec(
-            metric_keys=metric_keys,
-            traintuple_id=previous_id,
-            test_data_sample_keys=keys[TEST_NODE]["test_data_samples"],
-            data_manager_key=keys[TEST_NODE]["dataset"],
-        )
+    # Remove or put one testtuple every n epochs to make it faster
+    testtuple = ComputePlanTesttupleSpec(
+        metric_keys=metric_keys,
+        traintuple_id=previous_id,
+        test_data_sample_keys=keys[TEST_NODE]["test_data_samples"],
+        data_manager_key=keys[TEST_NODE]["dataset"],
+        metadata={
+            'round': idx,
+        }
+    )
 
-        testtuples.append(testtuple)
+    testtuples.append(testtuple)
 
-
+last_traintuple = traintuple
 compute_plan_spec = ComputePlanSpec(
     traintuples=traintuples,
     testtuples=testtuples,
 )
 
 print("Adding compute plan")
-compute_plan = clients[ALGO_NODE_PROFILE].add_compute_plan(compute_plan_spec)
+compute_plan = client.add_compute_plan(compute_plan_spec)
 print("Adding compute plan - done")
 
 compute_plan_info = compute_plan_spec.dict(exclude_none=False, by_alias=True)
@@ -423,6 +431,8 @@ client.get_compute_plan(compute_plan.key)
 # the evolution of your compute plan. For example:
 import time
 
+tqdm.write("Waiting for the compute plan to finish to get the performances.")
+
 submitted_testtuples = client.list_testtuple(
     filters=[f'testtuple:compute_plan_key:{compute_plan_info["key"]}']
 )
@@ -432,12 +442,81 @@ submitted_testtuples = sorted(submitted_testtuples, key=lambda x: x.rank)
 for submitted_testtuple in tqdm(submitted_testtuples):
     while submitted_testtuple.test.perfs is None:
         time.sleep(0.5)
-    submitted_testtuple = client.get_testtuple(submitted_testtuple.key)
+        submitted_testtuple = client.get_testtuple(submitted_testtuple.key)
     perfs = submitted_testtuple.test.perfs
-    perfs["accuracy"] = perfs.pop(auc_metric_key)
+    perfs["AUC"] = perfs.pop(auc_metric_key)
 
-    tqdm.write("rank: %s, perf: %s" % (submitted_testtuple.rank, perfs))
+    tqdm.write("rank: %s, round: %s, node: %s, perf: %s" %
+               (submitted_testtuple.rank,
+                submitted_testtuple.metadata['round'],
+                submitted_testtuple.worker,
+                perfs)
+    )
 
+# Make predictions on the test set
+# -----------------------------------
+
+tqdm.write("Create the Kaggle submission file.")
+
+from tensorflow import keras
+import tensorflow as tf
+import numpy as np
+import pandas as pd
+
+# get the last traintuple of the compute plan
+traintuple = client.get_traintuple(last_traintuple.traintuple_id)
+
+# Download the associated model
+model_path = Path(__file__).resolve().parents[1] / 'out'
+model_filename = f'model_{traintuple.train.models[0].key}'
+client.download_model_from_traintuple(traintuple.key, folder=model_path)
+
+# SPECIFIC TO YOUR ALGO
+# -----------------------
+#
+# Here we are loading the model that your algo produced
+# so if you change the algo, for example if you use PyTorch,
+# then you might need to change this part as well.
+
+# Load the model and create predictions: this code depends on the algo code
+model = keras.models.load_model(str(model_path / model_filename))
+
+image_size = (180, 180)
+batch_size = 32
+test_ds = tf.keras.preprocessing.image_dataset_from_directory(
+    directory=test_data_path,
+    labels="inferred",
+    label_mode="binary",
+    shuffle=False,
+    seed=0,
+    image_size=image_size,
+    batch_size=batch_size,
+)
+
+predictions = np.array([])
+labels = np.array([])
+for x, y in test_ds:
+    predictions = np.concatenate([predictions, model.predict(x).ravel()])
+    labels = np.concatenate([labels, y.numpy().ravel()])
+file_paths = test_ds.file_paths
+
+df_submission = pd.DataFrame(data={
+    'file_paths': file_paths,
+    'predictions': predictions
+})
+df_submission["file_paths"] = df_submission["file_paths"].apply(
+    lambda x: x.replace("/home/user/data/test", "/data/challenges_data/test"))
+
+submission_filepath = Path(
+    __file__).resolve().parents[1] / 'out' / 'df_submission.csv'
+df_submission.to_csv(submission_filepath, index=False)
+
+print(df_submission.head())
+
+tqdm.write(f"Created the file at {submission_filepath}")
+
+# Delete the downloaded model
+(model_path / model_filename).unlink()
 
 # Permission
 # -----------

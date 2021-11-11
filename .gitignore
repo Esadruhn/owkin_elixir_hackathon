@@ -9,6 +9,7 @@ local-worker/
 *.gz
 *.zip
 hackathon/fl_example/local_data_sample_keys.json
+model_*
 
 id_rsa_hackathon
 

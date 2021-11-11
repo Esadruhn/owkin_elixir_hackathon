@@ -9,8 +9,11 @@ from tensorflow.keras import layers
 
 N_UPDATE = 5
 BATCH_SIZE = 32
-N_ROUNDS = 3
 IMAGE_SIZE = (180, 180)
+
+# If you change this value, change it
+# in fl_example/main.py#L361 too
+N_ROUNDS = 3
 
 
 def generate_batch_indexes(index, n_rounds, n_update, batch_size):
@@ -27,7 +30,7 @@ def generate_batch_indexes(index, n_rounds, n_update, batch_size):
         List[List[index]]: A 2D list where each embedded list is the list of the
         indexes for a batch
     """
-
+    ### DO NOT CHANGE THE CODE OF THIS FUNCTION ###
     my_index = index
     np.random.seed(42)
     np.random.shuffle(my_index)
@@ -63,13 +66,13 @@ class Algo(tools.algo.Algo):
         where you can store information locally.
 
         Args:
-            X (DataFrame): Training features
-            y (DataFrame): Target
-            models (List[Algo]): List of algorithm from the previous step of the compute plan
+            X (List[Path]): Training features, list of paths to the samples
+            y (List[str]): Target, list of labels
+            models (List[model]): List of models from the previous step of the compute plan
             rank (int): The rank of the task in the compute plan
 
         Returns:
-            [Algo]: The updated algorithm after the training for this task
+            [model]: The updated algorithm after the training for this task
         """
         compute_plan_path = Path(self.compute_plan_path)
 
@@ -85,11 +88,12 @@ class Algo(tools.algo.Algo):
                 n_update=N_UPDATE,
                 batch_size=BATCH_SIZE,
             )
-
         if models:
+            # Nth round: we get the model from the previous round
             assert len(models) == 1, f"Only one parent model expected {len(models)}"
             model = models[0]
         else:
+            # First round: we initialize the model
             model = make_model(input_shape=IMAGE_SIZE + (3,), num_classes=2)
             model.compile(
                 optimizer=keras.optimizers.Adam(1e-3),
@@ -98,13 +102,17 @@ class Algo(tools.algo.Algo):
             )
 
         for i in range(N_UPDATE):
+            # One update = train on one batch
+            # The list of samples that belong to the batch is given by batch_loc
 
             print(batches_loc)
             print("One more update")
             print(i)
+            # Get the index of the samples in the batch
             batch_loc = batches_loc.pop()
-
+            # Load the batch samples
             batch_X, batch_y = get_X_and_Y(batch_loc, X, y)
+            # Fit the model on the batch
             model.fit(batch_X, batch_y, epochs=1)
 
         # Save the batch indexer
@@ -113,7 +121,8 @@ class Algo(tools.algo.Algo):
         return model
 
     def predict(self, X, model):
-
+        # X: list of paths to the samples
+        # return the predictions of the model on X, for calculating the AUC
         batch_X = np.empty(shape=(len(X), 180, 180, 3))
 
         for index, path in enumerate(X):
@@ -130,12 +139,19 @@ class Algo(tools.algo.Algo):
 
         predictions = model.predict(batch_X)
 
+        # predictions should be a numpy array of shape (n_samples)
         return predictions
 
     def load_model(self, path):
+        # Load the model from path
         return keras.models.load_model(path)
 
     def save_model(self, model, path):
+        # Save the model to path
+        # Careful, you need to save it exactly to 'path'
+        # For example numpy adds '.npy' to the end of the file when you save it:
+        #   np.save(path, *model)
+        #   shutil.move(path + '.npy', path) # rename the file
         model.save(path, save_format="h5")
 
 
@@ -150,7 +166,7 @@ def get_label_from_filepath(filepath):
 
 
 def get_X_and_Y(batch_indexes, X, y):
-
+    # Load the batch samples
     batch_X = np.empty(shape=(BATCH_SIZE, 180, 180, 3))
     batch_y = np.empty(shape=BATCH_SIZE)
 
@@ -173,6 +189,7 @@ def get_X_and_Y(batch_indexes, X, y):
 
 
 def make_model(input_shape, num_classes):
+    # Initialise the model
     inputs = keras.Input(shape=input_shape)
 
     data_augmentation = keras.Sequential(
