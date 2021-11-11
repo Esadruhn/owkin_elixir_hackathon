@@ -139,6 +139,7 @@ class Algo(tools.algo.Algo):
 
         predictions = model.predict(batch_X)
 
+        # predictions should be a numpy array of shape (n_samples)
         return predictions
 
     def load_model(self, path):
