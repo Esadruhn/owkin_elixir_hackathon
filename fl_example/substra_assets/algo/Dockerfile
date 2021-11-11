@@ -2,7 +2,7 @@
 FROM esadruhn/elixir_connect:0.9.0
 
 # install dependencies
-RUN pip3 install pandas==1.1.5 numpy==1.19.5 tensorflow==2.6.2 scikit-learn==0.24
+RUN pip3 install pandas==1.1.5 numpy==1.19.5 scikit-learn==0.24 torch torchvision
 
 # add your algorithm script to docker image
 ADD algo.py .

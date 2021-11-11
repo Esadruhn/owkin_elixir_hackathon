@@ -442,7 +442,7 @@ submitted_testtuples = sorted(submitted_testtuples, key=lambda x: x.rank)
 for submitted_testtuple in tqdm(submitted_testtuples):
     while submitted_testtuple.test.perfs is None:
         time.sleep(0.5)
-    submitted_testtuple = client.get_testtuple(submitted_testtuple.key)
+        submitted_testtuple = client.get_testtuple(submitted_testtuple.key)
     perfs = submitted_testtuple.test.perfs
     perfs["AUC"] = perfs.pop(auc_metric_key)
 
@@ -481,7 +481,7 @@ client.download_model_from_traintuple(traintuple.key, folder=model_path)
 
 # Load the model and create predictions: this code depends on the algo code
 class TorchModel(torch.nn.Module):
-    
+
     def __init__(
         self,
     ):
@@ -493,7 +493,7 @@ class TorchModel(torch.nn.Module):
         self.fc1 = torch.nn.Linear(16 * 53 * 53, 120)
         self.fc2 = torch.nn.Linear(120, 84)
         self.fc3 = torch.nn.Linear(84, 1)
-        
+
     def forward(self, x: torch.Tensor):
         x = self.conv1(x)
         x = self.pool(relu(x))

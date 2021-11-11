@@ -1,11 +1,13 @@
 from pathlib import Path
+import shutil
 
 import numpy as np
 import pandas as pd
 import substratools as tools
-import tensorflow as tf
-from tensorflow import keras
-from tensorflow.keras import layers
+
+import torch
+from torch.nn.functional import relu
+from torchvision.io import read_image
 
 N_UPDATE = 5
 BATCH_SIZE = 32
@@ -14,6 +16,63 @@ IMAGE_SIZE = (180, 180)
 # If you change this value, change it
 # in fl_example/main.py#L361 too
 N_ROUNDS = 3
+
+torch_device = torch.device(
+    "cuda") if torch.cuda.is_available() else torch.device("cpu")
+
+
+class TorchModel(torch.nn.Module):
+    def __init__(self, ):
+        # This is a very simple model, performs badly
+        super().__init__()
+        self.conv1 = torch.nn.Conv2d(3, 6, kernel_size=3)
+        self.pool = torch.nn.MaxPool2d(2, 2)
+        self.conv2 = torch.nn.Conv2d(6, 16, kernel_size=5)
+        self.fc1 = torch.nn.Linear(16 * 53 * 53, 120)
+        self.fc2 = torch.nn.Linear(120, 84)
+        self.fc3 = torch.nn.Linear(84, 1)
+
+    def forward(self, x: torch.Tensor):
+        x = self.conv1(x)
+        x = self.pool(relu(x))
+        x = self.pool(relu(self.conv2(x)))
+        x = torch.flatten(x, 1)  # flatten all dimensions except batch
+        x = relu(self.fc1(x))
+        x = relu(self.fc2(x))
+        x = self.fc3(x)
+        return x.squeeze()
+
+
+class CamelyonDataset(torch.utils.data.Dataset):
+    def __init__(self, data_path, labels=None, transform=None):
+        self.transform = transform
+
+        self.labels = labels
+        self.samples = data_path
+
+    def __len__(self):
+        return len(self.samples)
+
+    def __getitem__(self, idx):
+        img_path = self.samples[idx]
+        image = read_image(img_path).to(torch_device)
+        image = (1.0 / 255.0) * image
+
+        label = self.labels[idx] if self.labels is not None else None
+        sample = image, label, img_path
+
+        if self.transform:
+            sample = self.transform(sample)
+
+        if label is None:
+            return image, img_path
+        return sample
+
+
+def make_model():
+    model = TorchModel()
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+    return model, optimizer
 
 
 def generate_batch_indexes(index, n_rounds, n_update, batch_size):
@@ -47,7 +106,8 @@ def generate_batch_indexes(index, n_rounds, n_update, batch_size):
         # Otherwise, you store references during the for loop and everything
         # is computed at the end of the loop. So, you won't see the impact
         # of the shuffle operation
-        batches_iloc.append(list(my_index[k * batch_size : (k + 1) * batch_size]))
+        batches_iloc.append(list(my_index[k * batch_size:(k + 1) *
+                                          batch_size]))
         k += 1
         if n < (k + 1) * batch_size:
             np.random.shuffle(my_index)
@@ -90,61 +150,91 @@ class Algo(tools.algo.Algo):
             )
         if models:
             # Nth round: we get the model from the previous round
-            assert len(models) == 1, f"Only one parent model expected {len(models)}"
-            model = models[0]
+            assert len(
+                models) == 1, f"Only one parent model expected {len(models)}"
+            model, optimizer = models[0]
         else:
             # First round: we initialize the model
-            model = make_model(input_shape=IMAGE_SIZE + (3,), num_classes=2)
-            model.compile(
-                optimizer=keras.optimizers.Adam(1e-3),
-                loss="binary_crossentropy",
-                metrics=["accuracy"],
-            )
+            model, optimizer = make_model()
+            model.to(torch_device)
 
+        criterion = torch.nn.BCEWithLogitsLoss()
+
+        model.train()
+        dataset = CamelyonDataset(data_path=X, labels=y)
+        batch_sampler = torch.utils.data.sampler.BatchSampler(
+            [item for sublist in batches_loc for item in sublist],
+            batch_size=BATCH_SIZE,
+            drop_last=False,
+        )
+        dataloader = torch.utils.data.DataLoader(dataset,
+                                                 batch_sampler=batch_sampler,
+                                                 num_workers=0)
+        dataiter = iter(dataloader)
         for i in range(N_UPDATE):
             # One update = train on one batch
             # The list of samples that belong to the batch is given by batch_loc
 
-            print(batches_loc)
-            print("One more update")
-            print(i)
             # Get the index of the samples in the batch
             batch_loc = batches_loc.pop()
             # Load the batch samples
-            batch_X, batch_y = get_X_and_Y(batch_loc, X, y)
-            # Fit the model on the batch
-            model.fit(batch_X, batch_y, epochs=1)
+            inputs, labels, data_paths = next(dataiter)
 
-        # Save the batch indexer
-        batch_indexer_path.write_text(str(batches_loc))
+            labels = labels.to(torch_device).float()
 
-        return model
+            # zero the parameter gradients
+            optimizer.zero_grad()
+
+            # forward + backward + optimize
+            outputs = model(inputs)
+            loss = criterion(outputs, labels)
+            loss.backward()
+            optimizer.step()
+
+            # Save the batch indexer
+            batch_indexer_path.write_text(str(batches_loc))
+
+        return model, optimizer
 
     def predict(self, X, model):
         # X: list of paths to the samples
         # return the predictions of the model on X, for calculating the AUC
-        batch_X = np.empty(shape=(len(X), 180, 180, 3))
+        torch_model, _ = model
+        torch_model.eval()
 
-        for index, path in enumerate(X):
+        batch_size = 100
+        dataset = CamelyonDataset(data_path=X)
+        dataloader = torch.utils.data.DataLoader(dataset,
+                                                 batch_size=batch_size,
+                                                 shuffle=False,
+                                                 num_workers=0,
+                                                 drop_last=False)
 
-            image = tf.keras.preprocessing.image.load_img(
-                path,
-                grayscale=False,
-                color_mode="rgb",
-                target_size=IMAGE_SIZE,
-                interpolation="nearest",
-            )
-            input_arr = tf.keras.preprocessing.image.img_to_array(image)
-            batch_X[index, :, :, :] = input_arr
-
-        predictions = model.predict(batch_X)
+        predictions = np.empty(shape=(len(X)))
+        with torch.no_grad():
+            for index, (images, data_paths) in enumerate(dataloader):
+                inputs = images.to(torch_device)
+                torch_pred = torch.sigmoid(
+                    torch_model(inputs)).detach().cpu().numpy()
+                predictions[index * batch_size:index * batch_size +
+                            len(torch_pred)] = torch_pred
 
         # predictions should be a numpy array of shape (n_samples)
         return predictions
 
     def load_model(self, path):
         # Load the model from path
-        return keras.models.load_model(path)
+        checkpoint = torch.load(path)
+
+        model, optimizer = make_model()
+        model.load_state_dict(checkpoint['model'])
+
+        model.to(torch_device)
+
+        # Load the optimizer state dict after setting the model to GPU
+        optimizer.load_state_dict(checkpoint['optimizer'])
+
+        return model, optimizer
 
     def save_model(self, model, path):
         # Save the model to path
@@ -152,101 +242,14 @@ class Algo(tools.algo.Algo):
         # For example numpy adds '.npy' to the end of the file when you save it:
         #   np.save(path, *model)
         #   shutil.move(path + '.npy', path) # rename the file
-        model.save(path, save_format="h5")
+        torch_model, optimizer = model
+        checkpoint = {
+            "model": torch_model.state_dict(),
+            "optimizer": optimizer.state_dict(),
+        }
 
-
-def get_label_from_filepath(filepath):
-
-    if "normal" in filepath.stem:
-        return 0
-    elif "tumor" in filepath.stem:
-        return 1
-    else:
-        raise Exception()
-
-
-def get_X_and_Y(batch_indexes, X, y):
-    # Load the batch samples
-    batch_X = np.empty(shape=(BATCH_SIZE, 180, 180, 3))
-    batch_y = np.empty(shape=BATCH_SIZE)
-
-    for index, batch_index in enumerate(batch_indexes):
-
-        path = X[batch_index]
-        image = tf.keras.preprocessing.image.load_img(
-            path,
-            grayscale=False,
-            color_mode="rgb",
-            target_size=IMAGE_SIZE,
-            interpolation="nearest",
-        )
-        input_arr = tf.keras.preprocessing.image.img_to_array(image)
-
-        batch_X[index, :, :, :] = input_arr
-        batch_y[index] = get_label_from_filepath(path)
-
-    return batch_X, batch_y
-
-
-def make_model(input_shape, num_classes):
-    # Initialise the model
-    inputs = keras.Input(shape=input_shape)
-
-    data_augmentation = keras.Sequential(
-        [
-            layers.RandomFlip("horizontal"),
-            layers.RandomRotation(0.1),
-        ]
-    )
-
-    # Image augmentation block
-    x = data_augmentation(inputs)
-
-    # Entry block
-    x = layers.Rescaling(1.0 / 255)(x)
-    x = layers.Conv2D(32, 3, strides=2, padding="same")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation("relu")(x)
-
-    x = layers.Conv2D(64, 3, padding="same")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation("relu")(x)
-
-    previous_block_activation = x  # Set aside residual
-
-    for size in [128, 256, 512, 728]:
-        x = layers.Activation("relu")(x)
-        x = layers.SeparableConv2D(size, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.Activation("relu")(x)
-        x = layers.SeparableConv2D(size, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
-
-        # Project residual
-        residual = layers.Conv2D(size, 1, strides=2, padding="same")(
-            previous_block_activation
-        )
-        x = layers.add([x, residual])  # Add back residual
-        previous_block_activation = x  # Set aside next residual
-
-    x = layers.SeparableConv2D(1024, 3, padding="same")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation("relu")(x)
-
-    x = layers.GlobalAveragePooling2D()(x)
-    if num_classes == 2:
-        activation = "sigmoid"
-        units = 1
-    else:
-        activation = "softmax"
-        units = num_classes
-
-    x = layers.Dropout(0.5)(x)
-    outputs = layers.Dense(units, activation=activation)(x)
-    return keras.Model(inputs, outputs)
+        torch.save(checkpoint, path)
+        # shutil.move(path + '.pth', path) # rename the file
 
 
 if __name__ == "__main__":

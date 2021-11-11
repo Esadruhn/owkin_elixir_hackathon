@@ -76,13 +76,11 @@ from substra.sdk.schemas import ComputePlanSpec
 
 import register_datasamples
 
-
 current_directory = Path(__file__)
 assets_directory = current_directory.parent / "substra_assets"
 algo_directory = assets_directory / "algo"
 compute_plan_info_path = current_directory.parent / "compute_plan_info.json"
 test_data_path = Path('/') / 'home' / 'user' / 'data' / 'test'
-
 
 # Configuration of our connect platform
 # --------------------------------------
@@ -97,7 +95,6 @@ test_data_path = Path('/') / 'home' / 'user' / 'data' / 'test'
 # If you deployed your own connect platform with the tutorial, you are all set. Otherwise be
 # sure to change the **PROFILE_NAMES, NODES_IDS, ALGO_NODE_ID, ALGO_NODE_PROFILE**
 # below:
-
 
 DEBUG = True
 
@@ -117,6 +114,10 @@ NODES_IDS = [
 ]
 ALGO_NODE_PROFILE = PROFILE_NAMES[0]
 TEST_NODE = PROFILE_NAMES[2]
+
+# If you change this value, change it
+# in fl_example/substra_assets/algo/algo.py too
+N_ROUNDS = 3
 
 # Interaction with the platform
 # -------------------------------
@@ -207,6 +208,7 @@ keys = json.loads(key_path.read_text())
 #
 # In our case, we will use multiple metrics : an accuracy and a f1 score.
 # As for the test dataset, we will host the metrics on the algorithm node i.e. node-2.
+
 
 def register_metric(
     client: substra.Client,
@@ -306,12 +308,10 @@ tqdm.write("Assets keys have been saved to %s" % key_path.absolute())
 # * **models** : a list containing the resulting model of the latest training task.
 # * **rank** : an integer which represents the the order of execution of our tasks (from 0 to n).
 
-
 ALGO_DOCKERFILE_FILES: List[Path] = [
     algo_directory / "algo.py",
     algo_directory / "Dockerfile",
 ]
-
 
 archive_path = algo_directory / "algo.zip"
 with zipfile.ZipFile(archive_path, "w") as z:
@@ -358,10 +358,6 @@ algo_key = client.add_algo(algo)
 # the traintuple_id and the **models** parameter will contain the resulting model of the task
 # identified by the **in_models_ids** parameters.
 
-# If you change this value, change it
-# in fl_example/substra_assets/algo/algo.py too
-N_ROUNDS = 3
-
 traintuples = []
 testtuples = []
 previous_id = None
@@ -391,8 +387,7 @@ for idx in range(N_ROUNDS):
         data_manager_key=keys[TEST_NODE]["dataset"],
         metadata={
             'round': idx,
-        }
-    )
+        })
 
     testtuples.append(testtuple)
 
@@ -413,9 +408,8 @@ compute_plan_info = compute_plan_spec.dict(exclude_none=False, by_alias=True)
 compute_plan_info.update({"key": compute_plan.key})
 compute_plan_info_path.write_text(json.dumps(compute_plan_info))
 
-tqdm.write(
-    "Compute Plan keys have been saved to %s" % compute_plan_info_path.absolute()
-)
+tqdm.write("Compute Plan keys have been saved to %s" %
+           compute_plan_info_path.absolute())
 
 # Check your compute plan progresses
 # ----------------------------------
@@ -435,8 +429,7 @@ import time
 tqdm.write("Waiting for the compute plan to finish to get the performances.")
 
 submitted_testtuples = client.list_testtuple(
-    filters=[f'testtuple:compute_plan_key:{compute_plan_info["key"]}']
-)
+    filters=[f'testtuple:compute_plan_key:{compute_plan_info["key"]}'])
 
 submitted_testtuples = sorted(submitted_testtuples, key=lambda x: x.rank)
 
@@ -447,20 +440,19 @@ for submitted_testtuple in tqdm(submitted_testtuples):
     perfs = submitted_testtuple.test.perfs
     perfs["AUC"] = perfs.pop(auc_metric_key)
 
-    tqdm.write("rank: %s, round: %s, node: %s, perf: %s" %
-               (submitted_testtuple.rank,
-                submitted_testtuple.metadata['round'],
-                submitted_testtuple.worker,
-                perfs)
-    )
+    tqdm.write(
+        "rank: %s, round: %s, node: %s, perf: %s" %
+        (submitted_testtuple.rank, submitted_testtuple.metadata['round'],
+         submitted_testtuple.worker, perfs))
 
 # Make predictions on the test set
 # -----------------------------------
 
 tqdm.write("Create the Kaggle submission file.")
 
-from tensorflow import keras
-import tensorflow as tf
+import torch
+from torch.nn.functional import relu
+from torchvision.io import read_image
 import numpy as np
 import pandas as pd
 
@@ -479,27 +471,54 @@ client.download_model_from_traintuple(traintuple.key, folder=model_path)
 # so if you change the algo, for example if you use PyTorch,
 # then you might need to change this part as well.
 
+
 # Load the model and create predictions: this code depends on the algo code
-model = keras.models.load_model(str(model_path / model_filename))
+class TorchModel(torch.nn.Module):
+    def __init__(self, ):
+        # This is a very simple model, performs badly
+        super().__init__()
+        self.conv1 = torch.nn.Conv2d(3, 6, kernel_size=3)
+        self.pool = torch.nn.MaxPool2d(2, 2)
+        self.conv2 = torch.nn.Conv2d(6, 16, kernel_size=5)
+        self.fc1 = torch.nn.Linear(16 * 53 * 53, 120)
+        self.fc2 = torch.nn.Linear(120, 84)
+        self.fc3 = torch.nn.Linear(84, 1)
 
-image_size = (180, 180)
-batch_size = 32
-test_ds = tf.keras.preprocessing.image_dataset_from_directory(
-    directory=test_data_path,
-    labels="inferred",
-    label_mode="binary",
-    shuffle=False,
-    seed=0,
-    image_size=image_size,
-    batch_size=batch_size,
-)
+    def forward(self, x: torch.Tensor):
+        x = self.conv1(x)
+        x = self.pool(relu(x))
+        x = self.pool(relu(self.conv2(x)))
+        x = torch.flatten(x, 1)  # flatten all dimensions except batch
+        x = relu(self.fc1(x))
+        x = relu(self.fc2(x))
+        x = self.fc3(x)
+        return x.squeeze()
 
-predictions = np.array([])
-labels = np.array([])
-for x, y in test_ds:
-    predictions = np.concatenate([predictions, model.predict(x).ravel()])
-    labels = np.concatenate([labels, y.numpy().ravel()])
-file_paths = test_ds.file_paths
+
+torch_device = torch.device(
+    "cuda") if torch.cuda.is_available() else torch.device("cpu")
+
+# Load the model
+checkpoint = torch.load(model_path / model_filename)
+model = TorchModel()
+model.load_state_dict(checkpoint['model'])
+model.to(torch_device)
+model.eval()
+
+# Create the predictions locally
+predictions = list()
+file_paths = list()
+with torch.no_grad():
+    for target_path in test_data_path.glob('*'):
+        for file_path in target_path.glob('*'):
+            # Load the data the same way I do in the dataset in the algo
+            image = read_image(str(file_path)).to(torch_device)
+            image = (1.0 / 255.0) * image
+            image = image[None, :]  # Add an axis in position 0 (batch axis)
+            torch_pred = torch.sigmoid(model(image)).detach().cpu().item()
+
+        file_paths.append(str(file_path.resolve()))
+        predictions.append(torch_pred)
 
 df_submission = pd.DataFrame(data={
     'file_paths': file_paths,
