@@ -368,7 +368,7 @@ previous_id = None
 
 metric_keys = [auc_metric_key]
 
-for _ in range(N_ROUNDS):
+for idx in range(N_ROUNDS):
     # This is where you define training plan for each round
     # Here it is : train on node 1, test, train on node 2, test
     for node in PROFILE_NAMES:
@@ -389,6 +389,9 @@ for _ in range(N_ROUNDS):
         traintuple_id=previous_id,
         test_data_sample_keys=keys[TEST_NODE]["test_data_samples"],
         data_manager_key=keys[TEST_NODE]["dataset"],
+        metadata={
+            'round': idx,
+        }
     )
 
     testtuples.append(testtuple)
@@ -443,7 +446,12 @@ for submitted_testtuple in tqdm(submitted_testtuples):
     perfs = submitted_testtuple.test.perfs
     perfs["AUC"] = perfs.pop(auc_metric_key)
 
-    tqdm.write("rank: %s, perf: %s" % (submitted_testtuple.rank, perfs))
+    tqdm.write("rank: %s, round: %s, node: %s, perf: %s" %
+               (submitted_testtuple.rank,
+                submitted_testtuple.metadata['round'],
+                submitted_testtuple.worker,
+                perfs)
+    )
 
 # Make predictions on the test set
 # -----------------------------------
