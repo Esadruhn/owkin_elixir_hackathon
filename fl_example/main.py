@@ -358,6 +358,8 @@ algo_key = client.add_algo(algo)
 # the traintuple_id and the **models** parameter will contain the resulting model of the task
 # identified by the **in_models_ids** parameters.
 
+# If you change this value, change it
+# in fl_example/substra_assets/algo/algo.py too
 N_ROUNDS = 3
 
 traintuples = []
