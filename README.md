@@ -166,7 +166,10 @@ git pull origin master
 - Start by looking at the [quick start notebook](substra_materials/titanic_example/quick_start.ipynb). Understand it and run it in both debug and remote mode.
 - Then look at the [fl_example](fl_example). Make sure you can run the `main.py` file in debug mode. Once it's working you can modify the `algo.py` file to use your own algorithm.
 
-The only files you need to change are the [algo.py](./fl_example/substra_assets/algo/algo.py) for the algo code and the [Dockerfile](./fl_example/substra_assets/algo/Dockerfile) for the requirements (to install pytorch instead of tensorflow for example).
+The files you need to change are the [algo.py](./fl_example/substra_assets/algo/algo.py) for the algo code and the [Dockerfile](./fl_example/substra_assets/algo/Dockerfile) for the requirements (to install pytorch instead of tensorflow for example).
+
+In the [main.py](./fl_example/main.py), you can tune the number of rounds `N_ROUNDS`, and you need to update the code at the end of the file to download the model
+and create the Kaggle submission file from it.
 
 ## Share the code
 
