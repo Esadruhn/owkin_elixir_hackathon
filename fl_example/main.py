@@ -96,7 +96,7 @@ test_data_path = Path('/') / 'home' / 'user' / 'data' / 'test'
 # sure to change the **PROFILE_NAMES, NODES_IDS, ALGO_NODE_ID, ALGO_NODE_PROFILE**
 # below:
 
-DEBUG = True
+DEBUG = False
 
 # Change to 'docker' to test with one Docker container per task
 # The 'docker' mode is much slower, but should be tested at
