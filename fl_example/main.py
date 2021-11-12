@@ -396,6 +396,7 @@ compute_plan_spec = ComputePlanSpec(
     traintuples=traintuples,
     testtuples=testtuples,
     clean_models=True,
+    tag='thais_branch',
 )
 
 print("Adding compute plan")
