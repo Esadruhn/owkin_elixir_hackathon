@@ -226,6 +226,8 @@ Use the frontend to visualize the assets on each node: go to the URL in your bro
 I login to the backend of the node 1 from the CLI:
 
 ```sh
+substra config --profile node_B https://substra-backend-org-2.2.elixir.owkin.biz
+substra config --profile node_C https://substra-backend-org-3.3.elixir.owkin.biz
 substra config --profile node_A https://substra-backend-org-1.1.elixir.owkin.biz
 substra login --profile node_A --username my_user_node_1 --password my_user_node_1
 ```
