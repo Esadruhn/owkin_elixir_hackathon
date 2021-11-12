@@ -13,7 +13,7 @@ IMAGE_SIZE = (180, 180)
 
 # If you change this value, change it
 # in fl_example/main.py#L361 too
-N_ROUNDS = 2 # 50 for a full example
+N_ROUNDS = 3 # 50 for a full example
 
 
 def generate_batch_indexes(index, n_rounds, n_update, batch_size):
