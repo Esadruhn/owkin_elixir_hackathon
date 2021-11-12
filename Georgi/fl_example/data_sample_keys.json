@@ -1,0 +1,23 @@
+{
+    "node_A": {
+        "train_data_samples": [
+            "148322a4-dce5-4d59-af65-e4c36765e1ae"
+        ],
+        "dataset": "e2e7cd32-ad32-4576-a21c-f2f20795c42a"
+    },
+    "node_C": {
+        "train_data_samples": [
+            "9f9b5158-e25a-49e2-9386-4527e1c44003"
+        ],
+        "dataset": "5873a8e2-114e-4fbf-9a7b-23c0b28009f1",
+        "test_data_samples": [
+            "f1caa772-3588-418d-aeb3-8e3b39b20d3a"
+        ]
+    },
+    "node_B": {
+        "train_data_samples": [
+            "c49125d7-1930-4b6c-9db7-d3d48a34b962"
+        ],
+        "dataset": "aad264d4-b5d2-4af9-97ff-00571fcfbe52"
+    }
+}
