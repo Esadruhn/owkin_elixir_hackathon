@@ -7,13 +7,13 @@ import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
 
-N_UPDATE = 5
+N_UPDATE = 5 # 20 for a full example
 BATCH_SIZE = 32
 IMAGE_SIZE = (180, 180)
 
 # If you change this value, change it
 # in fl_example/main.py#L361 too
-N_ROUNDS = 3
+N_ROUNDS = 3 # 50 for a full example
 
 
 def generate_batch_indexes(index, n_rounds, n_update, batch_size):
@@ -189,8 +189,15 @@ def get_X_and_Y(batch_indexes, X, y):
 
 
 def make_model(input_shape, num_classes):
-    # Initialise the model
-    inputs = keras.Input(shape=input_shape)
+
+    base_model = tf.keras.applications.EfficientNetB3(
+    weights='imagenet',  # Load weights pre-trained on ImageNet.
+    input_shape=(180, 180, 3),
+    include_top=False)  # Do not include the ImageNet classifier at the top.
+
+    base_model.trainable = False
+
+    input_shape = IMAGE_SIZE + (3,)
 
     data_augmentation = keras.Sequential(
         [
@@ -198,55 +205,22 @@ def make_model(input_shape, num_classes):
             layers.RandomRotation(0.1),
         ]
     )
+    inputs = keras.Input(shape=input_shape)
 
     # Image augmentation block
     x = data_augmentation(inputs)
 
     # Entry block
     x = layers.Rescaling(1.0 / 255)(x)
-    x = layers.Conv2D(32, 3, strides=2, padding="same")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation("relu")(x)
+        
+    x = base_model(inputs, training=False)
+    # Convert features of shape `base_model.output_shape[1:]` to vectors
+    x = keras.layers.GlobalAveragePooling2D()(x)
+    # A Dense classifier with a single unit (binary classification)
+    outputs = keras.layers.Dense(1,activation="sigmoid")(x)
+    model = keras.Model(inputs, outputs)
 
-    x = layers.Conv2D(64, 3, padding="same")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation("relu")(x)
-
-    previous_block_activation = x  # Set aside residual
-
-    for size in [128, 256, 512, 728]:
-        x = layers.Activation("relu")(x)
-        x = layers.SeparableConv2D(size, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.Activation("relu")(x)
-        x = layers.SeparableConv2D(size, 3, padding="same")(x)
-        x = layers.BatchNormalization()(x)
-
-        x = layers.MaxPooling2D(3, strides=2, padding="same")(x)
-
-        # Project residual
-        residual = layers.Conv2D(size, 1, strides=2, padding="same")(
-            previous_block_activation
-        )
-        x = layers.add([x, residual])  # Add back residual
-        previous_block_activation = x  # Set aside next residual
-
-    x = layers.SeparableConv2D(1024, 3, padding="same")(x)
-    x = layers.BatchNormalization()(x)
-    x = layers.Activation("relu")(x)
-
-    x = layers.GlobalAveragePooling2D()(x)
-    if num_classes == 2:
-        activation = "sigmoid"
-        units = 1
-    else:
-        activation = "softmax"
-        units = num_classes
-
-    x = layers.Dropout(0.5)(x)
-    outputs = layers.Dense(units, activation=activation)(x)
-    return keras.Model(inputs, outputs)
+    return model
 
 
 if __name__ == "__main__":
